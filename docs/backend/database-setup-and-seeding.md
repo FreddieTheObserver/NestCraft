@@ -60,42 +60,6 @@ These are enough to support:
 - category filtering
 - featured product sections
 
-### Category
-
-The `Category` model stores product groupings such as:
-
-- Lighting
-- Decor
-- Storage
-
-Important fields:
-
-- `id`: primary key
-- `name`: display name
-- `slug`: URL-friendly identifier
-- `imageUrl`: optional image for category cards
-- `products`: relation to many products
-- `createdAt`, `updatedAt`: timestamps
-
-### Product
-
-The `Product` model stores sellable items.
-
-Important fields:
-
-- `id`: primary key
-- `name`: product title
-- `slug`: URL-friendly product identifier
-- `description`: product text for detail pages
-- `price`: money value, stored as `Decimal`
-- `stock`: inventory count
-- `imageUrl`: optional image
-- `isFeatured`: whether to show it in featured sections
-- `isActive`: whether the product should be visible in the storefront
-- `categoryId`: foreign key
-- `category`: relation to one category
-- `createdAt`, `updatedAt`: timestamps
-
 ## Relationship Design
 
 The relationship is one-to-many:
@@ -109,9 +73,7 @@ This is the right starting point for `NestCraft` because it keeps the catalog si
 
 This project uses Prisma 7.
 
-That matters because Prisma 7 handles database connection differently from older Prisma examples you may find online.
-
-Important differences:
+Important differences from older examples:
 
 - the datasource `url` is not kept in `schema.prisma`
 - connection settings are read from [prisma.config.ts](c:/Users/user/NestCraft/server/prisma.config.ts)
@@ -132,8 +94,6 @@ Important variables:
 - `PORT`
 - `CLIENT_ORIGIN`
 - `DATABASE_URL`
-
-`DATABASE_URL` points Prisma and PostgreSQL to the `nestcraft` database.
 
 ## Seed File Purpose
 
@@ -180,105 +140,43 @@ In seed data, decimal values are safely passed as strings such as:
 - `"49.99"`
 - `"24.99"`
 
-## Migration Step
+## Commands Used
 
-Before seeding, the database tables must exist.
-
-That is why the migration step came before the seed step.
-
-Command used:
-
-```bash
-npx prisma migrate dev --name init-product-category
-```
-
-Explanation:
-This creates the initial migration files and applies them to PostgreSQL so the `Category` and `Product` tables exist.
-
-## Client Generation Step
-
-Command used:
+Generate the Prisma client:
 
 ```bash
 npx prisma generate
 ```
 
-Explanation:
-This generates the Prisma client from the Prisma schema so TypeScript can query the database using typed methods.
+Create and apply the initial migration:
 
-## Seed Command
-
-The seed command is defined in [package.json](c:/Users/user/NestCraft/server/package.json):
-
-```json
-"seed": "tsx prisma/seed.ts"
+```bash
+npx prisma migrate dev --name init-product-category
 ```
 
-Explanation:
-This runs the TypeScript seed file directly through `tsx`.
-
-Command used:
+Run the seed script:
 
 ```bash
 npm run seed
 ```
 
-Explanation:
-This inserts the sample NestCraft categories and products into PostgreSQL.
-
-## What Was Seeded
-
-The first seed includes:
-
-- categories such as `Lighting`, `Decor`, and `Storage`
-- several sample home-item products
-- product-category relationships through `categoryId`
-
-This is enough to support the first products API.
-
 ## Common Errors Encountered
 
-### 1. Misspelled environment variable
+### Misspelled environment variable
 
-Using a wrong env key such as `DATABAE_URL` breaks schema validation.
+Using a wrong env key such as `DATABAE_URL` breaks Prisma configuration.
 
-Lesson:
-- environment variable names must match exactly
-
-### 2. Old Prisma syntax from earlier versions
+### Old Prisma syntax
 
 Adding `url = env("DATABASE_URL")` inside `schema.prisma` caused an error because Prisma 7 no longer supports that there.
 
-Lesson:
-- check Prisma version behavior before following older tutorials
-
-### 3. Seeding before migration
+### Seeding before migration
 
 The seed failed when the `Product` table did not exist yet.
 
-Lesson:
-- migrate first
-- seed second
-
-### 4. ESM import path issue
+### ESM import path issue
 
 The generated Prisma client import for ESM needed the `.js` extension in the seed file.
-
-Lesson:
-- with ESM, compiled import paths must be explicit
-
-## Development Workflow Used
-
-The recommended Git workflow for this stage is:
-
-1. create a feature branch
-2. implement schema changes
-3. run migration
-4. run seed
-5. verify with Prisma Studio
-6. commit and merge when working
-
-This keeps `main` stable while database work is being tested.
 
 ## Verification Checklist
 
@@ -289,11 +187,3 @@ The database setup is considered successful when:
 - migration applies successfully
 - seed runs successfully
 - Prisma Studio shows category and product data
-
-## Next Step
-
-After this database milestone, the next backend feature should be:
-
-- `GET /api/products`
-
-That endpoint will return the seeded product data to the frontend and become the first real catalog API for `NestCraft`.
