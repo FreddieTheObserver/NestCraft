@@ -6,6 +6,7 @@ Current documents:
 
 - [database-setup-and-seeding.md](c:/Users/user/NestCraft/docs/backend/database-setup-and-seeding.md)
 - [products-api.md](c:/Users/user/NestCraft/docs/backend/products-api.md)
+- [product-detail-api.md](c:/Users/user/NestCraft/docs/backend/product-detail-api.md)
 
 Use these notes as the backend reference for:
 

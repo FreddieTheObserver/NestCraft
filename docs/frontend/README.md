@@ -5,6 +5,8 @@ This folder collects frontend-focused notes for `NestCraft`.
 Current documents:
 
 - [api-integration.md](c:/Users/user/NestCraft/docs/frontend/api-integration.md)
+- [products-page.md](c:/Users/user/NestCraft/docs/frontend/products-page.md)
+- [product-detail-page.md](c:/Users/user/NestCraft/docs/frontend/product-detail-page.md)
 
 Use these notes as the frontend reference for:
 
