@@ -13,3 +13,15 @@ export async function getAllProducts() {
             },
       });
 }
+
+export async function getProductBySlug(slug: string) {
+      return prisma.product.findFirst({
+            where: {
+                  slug,
+                  isActive: true,
+            },
+            include: {
+                  category: true,
+            },
+      });
+}
