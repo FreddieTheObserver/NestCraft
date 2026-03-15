@@ -5,7 +5,9 @@ import { env } from "./config/env.js";
 import healthRouter from "./routes/health.js";
 
 import productRouter from "./routes/product.js";
-import { getProducts } from "./controllers/productController.js";
+import authRouter from "./routes/auth.js";
+
+import { requireAuth } from './middleware/authMiddleware.js';
 
 const app = express();
 
@@ -19,5 +21,12 @@ app.use(express.json());
 app.use("/api/health", healthRouter);
 
 app.use("/api/products", productRouter);
+app.use("/api/auth", authRouter);
+
+app.get("/api/me", requireAuth, (req, res) => {
+  res.status(200).json({
+    message: "Authenticated",
+  })
+})
 
 export default app;
