@@ -8,6 +8,7 @@ import productRouter from "./routes/product.js";
 import authRouter from "./routes/auth.js";
 
 import { requireAuth } from './middleware/authMiddleware.js';
+import orderRouter from "./routes/order.js";
 
 const app = express();
 
@@ -22,6 +23,7 @@ app.use("/api/health", healthRouter);
 
 app.use("/api/products", productRouter);
 app.use("/api/auth", authRouter);
+app.use("/api/orders", orderRouter);
 
 app.get("/api/me", requireAuth, (req, res) => {
   res.status(200).json({
