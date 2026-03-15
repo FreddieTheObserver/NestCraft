@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { useCart } from '../context/CartContext';
 
 import { getProductBySlug, type Product } from "../services/products";
 
@@ -8,7 +9,8 @@ function ProductDetailPage() {
       const[product, setProduct] = useState<Product | null>(null);
       const[loading, setLoading] = useState(true);
       const[error, setError] = useState("");
-      const [imageFailed, setImageFailed] = useState(false)
+      const [imageFailed, setImageFailed] = useState(false);
+      const { addToCart } = useCart();
 
       useEffect(() => {
             let cancelled = false;
@@ -217,16 +219,28 @@ function ProductDetailPage() {
                                                 </div>
                                           </div>
                                     </div>
-                                    <div className="mt-8 space-y-4">
+                                    <div className="mt-8 grid gap-3 sm:grid-cols-2">
                                           <button
                                                 type="button"
+                                                onClick={() => 
+                                                      addToCart({
+                                                            id: product.id,
+                                                            slug: product.slug,
+                                                            name: product.name,
+                                                            price: product.price,
+                                                            imageUrl: product.imageUrl,
+                                                      })
+                                                }
                                                 className="w-full rounded-full bg-walnut px-6 py-4 text-sm font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-clay"
                                           >
                                                 Add to cart
                                           </button>
-                                          <p className="text-sm leading-6 text-stone-500">
-                                                This button is visual for now. The cart flow comes in the next ecommerce slice.
-                                          </p>
+                                          <Link 
+                                                to="/cart"
+                                                className="flex w-full items-center justify-center rounded-full border border-clay/20 bg-clay/10 px-6 py-4 text-sm font-semibold uppercase tracking-[0.2em] text-clay transition hover:border-clay hover:bg-clay hover:text-white"
+                                          >
+                                                View cart
+                                          </Link>
                                     </div>
                               </div>
                         </div>
