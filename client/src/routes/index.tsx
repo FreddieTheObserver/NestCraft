@@ -3,6 +3,9 @@ import { createBrowserRouter } from 'react-router-dom'
 import ProductsPage from '../pages/ProductsPage';
 import ProductDetailPage from '../pages/ProductDetailPage';
 import CartPage from '../pages/CartPage';
+import LoginPage from '../pages/LoginPage';
+import RegisterPage from '../pages/RegisterPage';
+import ProtectedRoute from '../components/ProtectedRoute';
 
 export const router = createBrowserRouter([
       {
@@ -18,7 +21,19 @@ export const router = createBrowserRouter([
             element: <ProductDetailPage />,
       },
       {
+            path: '/login',
+            element: <LoginPage />,
+      },
+      {
+            path: '/register',
+            element: <RegisterPage />,
+      },
+      {
             path: '/cart',
-            element: <CartPage />,
-      }
-])
+            element: (
+                  <ProtectedRoute>
+                        <CartPage />
+                  </ProtectedRoute>
+            ),
+      },
+]);

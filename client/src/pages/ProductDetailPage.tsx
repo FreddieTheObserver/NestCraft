@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useCart } from '../context/CartContext';
 
+import StoreHeader from "../components/StoreHeader";
 import { getProductBySlug, type Product } from "../services/products";
 
 function ProductDetailPage() {
@@ -117,6 +118,7 @@ function ProductDetailPage() {
       return (
             <main className="min-h-screen bg-sand px-6 py-12 text-walnut sm:px-10 lg:px-16">
                   <section className="mx-auto max-w-6xl space-y-8">
+                        <StoreHeader />
                         <Link
                               to="/products"
                               className="inline-flex text-sm font-semibold uppercase tracking-[0.2em] text-clay transition hover:text-walnut"

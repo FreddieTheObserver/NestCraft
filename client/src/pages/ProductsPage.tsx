@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import ProductCard from '../components/ProductCard';
+import StoreHeader from '../components/StoreHeader';
 import { getProducts, type Product } from '../services/products';
 
 function ProductsPage() {
@@ -87,7 +88,8 @@ function ProductsPage() {
 
       return (
             <main className="min-h-screen bg-sand px-6 py-12 text-walnut sm:px-10 lg:px-16">
-                  <section className="mx-auto max-w-7xl">
+                  <section className="mx-auto max-w-7xl space-y-8">
+                        <StoreHeader />
                         <div className="grid gap-8 rounded-[2rem] bg-gradient-to-r from-white/70 via-white/40 to-transparent p-8 shadow-[0_20px_50px_rgba(32,26,22,0.06)] lg:grid-cols-[1.3fr_0.7fr] lg:items-end">
                               <div className="space-y-4">
                                     <p className="text-sm font-semibold uppercase tracking-[0.28em] text-clay">

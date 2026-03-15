@@ -41,10 +41,10 @@ export async function login(req: Request, res: Response) {
 
             const result = await loginUser(email, password);
 
-            return res.status(201).json(result);
+            return res.status(200).json(result);
       } catch (error) {
             if (error instanceof Error && error.message === "INVALID_CREDENTIALS") {
-                  res.status(401).json({
+                  return res.status(401).json({
                         message: "Invalid credentials",
                   });
             }
