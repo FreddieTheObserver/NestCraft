@@ -30,9 +30,9 @@ function OrdersPage() {
                         if (!cancelled) {
                               setOrders(data)
                         }
-                  } catch {
+                  } catch (error) {
                         if (!cancelled) {
-                              setError('Failed to load your orders.')
+                              setError(error instanceof Error ? error.message : 'Failed to load your orders.')
                         }
                   } finally {
                         if (!cancelled) {
@@ -198,7 +198,7 @@ function OrdersPage() {
                                                                               {item.product.name}
                                                                         </Link>
                                                                         <p className="mt-1 text-sm text-stone-500">
-                                                                              Qty {item.quantity} · ${item.unitPrice} each
+                                                                              Qty {item.quantity} - ${item.unitPrice} each
                                                                         </p>
                                                                   </div>
                                                                   <p className="text-sm font-semibold text-walnut">

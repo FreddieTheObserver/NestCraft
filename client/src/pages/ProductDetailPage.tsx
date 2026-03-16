@@ -32,9 +32,9 @@ function ProductDetailPage() {
                         if (!cancelled) {
                               setProduct(data);
                         }
-                  } catch {
+                  } catch (error) {
                         if (!cancelled) {
-                              setError('Failed to load product');
+                              setError(error instanceof Error ? error.message : 'Failed to load product');
                         }
                   } finally {
                         if (!cancelled) {

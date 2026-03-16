@@ -58,8 +58,12 @@ function CheckoutPage() {
 
                   setCreatedOrder(order)
                   clearCart()
-            } catch {
-                  setError('Failed to place order. Please check your details and try again.')
+            } catch (error) {
+                  setError(
+                        error instanceof Error
+                              ? error.message
+                              : 'Failed to place order. Please check your details and try again.',
+                  )
             } finally {
                   setLoading(false)
             }

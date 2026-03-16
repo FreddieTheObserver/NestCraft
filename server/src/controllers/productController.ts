@@ -1,43 +1,32 @@
 import type { Request, Response } from "express";
 
 import { getAllProducts, getProductBySlug } from "../services/productService.js";
+import { sendError } from '../utils/http.js';
 
-export async function getProducts(req: Request, res: Response) {
+export async function getProducts(_req: Request, res: Response) {
       try {
             const products = await getAllProducts();
 
-            res.status(200).json(products);
+            return res.status(200).json(products);
       } catch (error) {
             console.error("Failed to fetch products: ", error);
-            res.status(500).json({
-                  message: "Failed to fetch products",
-            });
+            return sendError(res, 500, "INTERNAL_ERROR", "Failed to fetch products");
       }
 }
 
-export async function getProduct(req: Request, res: Response) {
+export async function getProduct(req: Request<{ slug: string }>, res: Response) {
       try {
-            const slug = req.params.slug;
-
-            if (!slug || Array.isArray(slug)) {
-                  return res.status(400).json({
-                        message: "Invalid product slug",
-                  });
-            }
+            const { slug } = req.params;
 
             const product = await getProductBySlug(slug);
 
             if (!product) {
-                  return res.status(404).json({
-                        message: "Product not found",
-                  });
+                  return sendError(res, 404, "PRODUCT_NOT_FOUND", "Product not found");
             }
 
             return res.status(200).json(product);
       } catch (error) {
-            console.error("Failed to feetch product: ", error);
-            return res.status(500).json({
-                  message: "Failed to fetch product",
-            });
+            console.error("Failed to fetch product: ", error);
+            return sendError(res, 500, "INTERNAL_ERROR", "Failed to fetch product");
       }
 }

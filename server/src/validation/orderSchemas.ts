@@ -1,0 +1,16 @@
+import { z } from 'zod';
+
+const orderItemSchema = z.object({
+      productId: z.number().int().positive("Product id must be a positive integer"),
+      quantity: z.number().int().min(1, "Quantity must be at least 1"),
+});
+
+export const createOrderSchema = z.object({
+      shippingName: z.string().trim().min(2, "Shipping name is required"),
+      shippingEmail: z.string().trim().email("Shipping email must be valid"),
+      shippingPhone: z.string().trim().min(6, "Shipping phone is required"),
+      shippingCity: z.string().trim().min(2, "Shipping city is required"),
+      shippingAddress: z.string().trim().min(5, "Shipping address is required"),
+      notes: z.string().trim().max(500, "Notes are too long").optional(),
+      items: z.array(orderItemSchema).min(1, "Order must contain at least one item"),
+});

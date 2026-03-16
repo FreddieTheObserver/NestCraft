@@ -1,6 +1,8 @@
 import type { Response } from 'express';
+
 import type { AuthenticatedRequest } from '../middleware/authMiddleware.js';
 import { createOrder, getOrdersByUserId } from '../services/orderService.js';
+import { sendError } from '../utils/http.js';
 
 type OrderItemInput = {
       productId: number, 
@@ -15,9 +17,7 @@ export async function getMyOrdersHandler(
             const userId = req.user?.userId;
 
             if (!userId) {
-                  return res.status(401).json({
-                        message: "Unauthorized",
-                  });
+                  return sendError(res, 401, "UNAUTHORIZED", "Authentication is required");
             }
 
             const orders = await getOrdersByUserId(userId);
@@ -25,10 +25,7 @@ export async function getMyOrdersHandler(
             return res.status(200).json(orders);
       } catch (error) {
             console.error("Fetch orders failed: ", error);
-
-            return res.status(500).json({
-                  message: "Failed to fetch orders",
-            });
+            return sendError(res, 500, "INTERNAL_ERROR", "Failed to fetch orders");
       }
 }
 
@@ -39,9 +36,7 @@ export async function createOrderHandler(
       try {
             const userId = req.user?.userId;
             if (!userId) {
-                  return res.status(401).json({
-                        message: "Unauthorized",
-                  });
+                  return sendError(res, 401, "UNAUTHORIZED", "Authentication is required");
             }
 
             const {
@@ -53,34 +48,6 @@ export async function createOrderHandler(
                   notes,
                   items,
             } = req.body;
-
-            if (
-                  !shippingName ||
-                  !shippingEmail || 
-                  !shippingPhone || 
-                  !shippingCity || 
-                  !shippingAddress ||
-                  !Array.isArray(items) || 
-                  items.length === 0
-            ) {
-                  return res.status(400).json({
-                        message: "Missing required checkout fields",
-                  });
-            }
-
-            const isValidItems = items.every(
-                  (item: unknown) => 
-                        item !== null && 
-                        typeof item === "object" && 
-                        typeof (item as any).productId === "number" &&
-                        typeof (item as any).quantity === "number",
-            );
-
-            if (!isValidItems) {
-                  return res.status(400).json({
-                        message: "Invalid items format",
-                  });
-            }
 
             const order = await createOrder({
                   userId,
@@ -97,33 +64,23 @@ export async function createOrderHandler(
       } catch (error) {
             if (error instanceof Error) {
                   if (error.message === "NO_ITEMS") {
-                        return res.status(400).json({
-                              message: "Order must contain at least one item",
-                        });
+                        return sendError(res, 400, "NO_ITEMS", "Order must contain at least one item");
                   }
 
                   if (error.message === "INVALID_PRODUCTS") {
-                        return res.status(400).json({
-                              message: "One or more products are invalid",
-                        });
+                        return sendError(res, 400, "INVALID_PRODUCTS", "One or more products are invalid");
                   }
 
                   if (error.message === "INVALID_QUANTITY") {
-                        return res.status(400).json({
-                              message: "Invalid quantity in order items",
-                        });
+                        return sendError(res, 400, "INVALID_QUANTITY", "Invalid quantity in order items");
                   }
 
                   if (error.message === "INSUFFICIENT_STOCK") {
-                        return res.status(400).json({
-                              message: "One or more items are out of stock",
-                        });
+                        return sendError(res, 400, "INSUFFICIENT_STOCK", "One or more items are out of stock");
                   }
             }
 
             console.error("Create order failed: ", error);
-            return res.status(500).json({
-                  message: "Failed to create order",
-            });
+            return sendError(res, 500, "INTERNAL_ERROR", "Failed to create order");
       }
 }

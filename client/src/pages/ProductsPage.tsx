@@ -22,9 +22,9 @@ function ProductsPage() {
                         if (!cancelled) {
                               setProducts(data);
                         }
-                  } catch {
+                  } catch (error) {
                         if (!cancelled) {
-                              setError('Failed to load products.');
+                              setError(error instanceof Error ? error.message : 'Failed to load products.');
                         }
                   } finally {
                         if (!cancelled) {

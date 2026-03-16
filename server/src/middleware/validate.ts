@@ -1,0 +1,35 @@
+import type { NextFunction, Request, Response } from "express";
+import { ZodError, type ZodTypeAny } from 'zod';
+
+import { sendError } from '../utils/http.js';
+
+type SchemaSet = {
+      body?: ZodTypeAny;
+      params?: ZodTypeAny;
+};
+
+export function validate(schemas: SchemaSet) {
+      return (req: Request, res: Response, next: NextFunction) => {
+            try {
+                  if (schemas.body) {
+                        req.body = schemas.body.parse(req.body);
+                  }
+
+                  if (schemas.params) {
+                        req.params = schemas.params.parse(req.params) as Request["params"];
+                  }
+
+                  return next();
+            } catch (error) {
+                  if (error instanceof ZodError) {
+                        return sendError(res, 400, "VALIDATION_ERROR", "Request validation failed", {
+                              issues: error.issues.map((issue) => ({
+                                    path: issue.path.join("."),
+                                    message: issue.message,
+                              })),
+                        });
+                  }
+                  return sendError(res, 500, "INTERNAL_ERROR", "Unexpected validation failure");
+            }
+      };
+}

@@ -1,3 +1,5 @@
+import { readApiError } from '../utils/api'
+
 type AuthUser = {
       id: number
       name: string 
@@ -31,7 +33,7 @@ export async function registerUser(data: RegisterInput): Promise<AuthResponse> {
       })
 
       if (!response.ok) {
-            throw new Error("Failed to register");
+            throw new Error(await readApiError(response, "Failed to register"));
       }
 
       return response.json() as Promise<AuthResponse>;
@@ -47,7 +49,7 @@ export async function loginUser(data: LoginInput): Promise<AuthResponse> {
       })
 
       if (!response.ok) {
-            throw new Error("Failed to login");
+            throw new Error(await readApiError(response, "Failed to login"));
       }
 
       return response.json() as Promise<AuthResponse>;

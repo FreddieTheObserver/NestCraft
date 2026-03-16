@@ -22,8 +22,8 @@ function RegisterPage() {
 
                   await register({ name, email, password });
                   navigate('/products');
-            } catch {
-                  setError('Register failed. Try another email.');
+            } catch (error) {
+                  setError(error instanceof Error ? error.message : 'Register failed. Try another email.');
             } finally {
                   setLoading(false);
             }

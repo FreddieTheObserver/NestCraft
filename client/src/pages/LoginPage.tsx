@@ -21,8 +21,8 @@ function LoginPage() {
 
                   await login({ email, password });
                   navigate('/products');
-            } catch {
-                  setError('Login failed. Check your email and password');
+            } catch (error) {
+                  setError(error instanceof Error ? error.message : 'Login failed. Check your email and password');
             } finally {
                   setLoading(false);
             }

@@ -2,10 +2,13 @@ import type { NextFunction, Request, Response } from "express";
 import jwt from 'jsonwebtoken';
 
 import { env } from '../config/env.js';
+import { sendError } from '../utils/http.js';
+
+type UserRole = "customer" | "admin";
 
 type AuthTokenPayload = {
       userId: number;
-      role: string;
+      role: UserRole;
 };
 
 export type AuthenticatedRequest = Request & {
@@ -20,9 +23,7 @@ export function requireAuth(
       const authorization = req.headers.authorization;
       
       if (!authorization || !authorization.startsWith("Bearer ")) {
-            return res.status(401).json({
-                  message: "Unauthorized",
-            });
+            return sendError(res, 401, "UNAUTHORIZED", "Authentication is required");
       }
 
       const token = authorization.split(" ")[1];
@@ -32,8 +33,22 @@ export function requireAuth(
             req.user = decoded;
             return next();
       } catch {
-            return res.status(401).json({
-                  message: "Invalid token",
-            })
+            return sendError(res, 401, "INVALID_TOKEN", "Invalid or expired token");
       }
+}
+
+export function requireAdmin (
+      req: AuthenticatedRequest,
+      res: Response,
+      next: NextFunction,
+) {
+      if (!req.user) {
+            return sendError(res, 401, "UNAUTHORIZED", "Authentication is required");
+      }
+
+      if (req.user.role !== "admin") {
+            return sendError(res, 403, "FORBIDDEN", "Admin access is required");
+      }
+
+      return next();
 }

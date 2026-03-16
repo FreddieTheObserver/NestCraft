@@ -1,3 +1,5 @@
+import { readApiError } from '../utils/api'
+
 export type CheckoutItemInput = {
       productId: number
       quantity: number
@@ -52,7 +54,7 @@ export async function createOrder(data: CreateOrderInput, token: string): Promis
       })
 
       if (!response.ok) {
-            throw new Error('Failed to create order')
+            throw new Error(await readApiError(response, 'Failed to create order'))
       }
 
       return response.json() as Promise<OrderResponse>
@@ -66,7 +68,7 @@ export async function getMyOrders(token: string): Promise<OrderResponse[]> {
       })
 
       if (!response.ok) {
-            throw new Error('Failed to fetch orders')
+            throw new Error(await readApiError(response, 'Failed to fetch orders'))
       }
 
       return response.json() as Promise<OrderResponse[]>
