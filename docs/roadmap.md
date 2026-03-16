@@ -1,265 +1,326 @@
-# NestCraft MVP Roadmap
+# NestCraft Roadmap
 
----
+This roadmap reflects the current state of the project, not the original starting plan.
+
+## Current State
+
+These slices are already implemented:
+
+- foundation setup
+  - Vite + React + TypeScript client
+  - Express + TypeScript backend
+  - PostgreSQL + Prisma
+- product catalog
+  - seeded `Category` and `Product` data
+  - `GET /api/products`
+  - `GET /api/products/:slug`
+  - products page
+  - product detail page
+- cart
+  - local cart state
+  - `localStorage` persistence
+  - cart page
+- auth
+  - register
+  - login
+  - logout
+  - protected routes
+- checkout skeleton
+  - `POST /api/orders`
+  - checkout page
+  - order creation from cart
+- account/order history
+  - `GET /api/orders/me`
+  - orders page
+- backend hardening
+  - route-level validation
+  - shared API error shape
+  - `requireAuth`
+  - `requireAdmin`
+- admin backend product endpoints
+  - `POST /api/products`
+  - `PATCH /api/products/:id`
+  - `PATCH /api/products/:id/deactivate`
+
+## Current Position
+
+The project is now past the MVP storefront foundation stage.
+
+The next highest-value work is:
+
+1. frontend admin product management
+2. admin order management
+3. browse/search/filter improvements
+4. polish and deployment
+
+## Recommended Next Branch
+
+Use this next:
+
+```bash
+git checkout -b feature/admin-products-ui
+```
+
+That branch should focus on the frontend side of admin product management:
+
+- admin products list page
+- create product form
+- edit product form
+- admin route protection
+
+## Phase Breakdown
 
 ## Phase 1: Foundation
 
-**Goal:** Make the stack stable and ready for real features.
+Status: complete
 
-### Build
-- Frontend routing
-- Backend route structure
-- Prisma setup
-- PostgreSQL connection
-- Environment config
-- Shared project conventions
+Built:
 
-### Why First
-- Every later feature depends on this
-- Reduces rework
+- project structure
+- frontend and backend bootstrapping
+- environment setup
+- Prisma integration
+- health route
+- shared conventions
 
-> You are basically here already.
+Why it mattered:
 
----
+- every later feature depends on a stable base
+- TypeScript and Prisma decisions affect all later code
 
 ## Phase 2: Product Catalog
 
-**Goal:** Show real home-item products from the database.
+Status: complete
 
-### Build
-- Prisma models for `Category` and `Product`
-- First migration
-- Seed sample data
-- Backend endpoints:
-  - `GET /api/products`
-  - `GET /api/products/:id`
-- Frontend:
-  - Home page with featured products
-  - Products page
-  - Product detail page
+Built:
 
-### Why Second
-- Products are the center of any ecommerce app
-- Almost every other feature depends on product data
+- `Category` and `Product` Prisma models
+- migrations and seed data
+- `GET /api/products`
+- `GET /api/products/:slug`
+- products grid page
+- product detail page
 
-### What You Learn
-- Prisma models
-- API design
-- Fetching and rendering real data
+Why it mattered:
 
----
+- products are the center of the storefront
+- later cart, checkout, and admin flows all depend on catalog data
 
-## Phase 3: Search, Filter, Sort
+## Phase 3: Cart
 
-**Goal:** Help users browse products efficiently.
+Status: complete for local-cart version
 
-### Build
-- Filter by category
-- Sort by price or newest
-- Search by product name
-- Backend query params
-- Frontend filter UI
+Built:
 
-### Example
+- add to cart
+- quantity updates
+- remove from cart
+- subtotal calculation
+- cart persistence in `localStorage`
+
+What is intentionally deferred:
+
+- server-side cart
+- cart merge across devices
+
+Why deferred:
+
+- backend cart is tightly coupled to auth and account persistence
+- local cart was the right first implementation
+
+## Phase 4: Authentication
+
+Status: complete for basic auth
+
+Built:
+
+- `User` model
+- register/login endpoints
+- JWT issuance
+- auth context
+- protected routes
+- shared header logout behavior
+
+What is intentionally deferred:
+
+- password reset
+- email verification
+- OAuth providers
+- refresh-token rotation
+
+## Phase 5: Checkout Skeleton
+
+Status: complete for first order flow
+
+Built:
+
+- `Order` and `OrderItem` models
+- `POST /api/orders`
+- shipping form
+- server-side total calculation
+- stock decrement
+- order confirmation state
+
+Why this matters:
+
+- the app can now complete a basic purchase flow
+- order history becomes possible only after checkout exists
+
+## Phase 6: Order History
+
+Status: complete for customer view
+
+Built:
+
+- `GET /api/orders/me`
+- protected orders page
+- purchase history UI
+- item links back to product detail pages
+
+What is still missing:
+
+- dedicated order detail page
+- customer-facing order numbers
+
+## Phase 7: Backend Hardening
+
+Status: complete for current routes
+
+Built:
+
+- route-level validation with `zod`
+- shared API error format
+- `requireAuth`
+- `requireAdmin`
+- frontend API error propagation
+- cleanup of text/encoding issues
+
+Why this was done before admin UI:
+
+- admin routes need stricter authorization boundaries
+- validation and error handling would otherwise become duplicated quickly
+
+## Phase 8: Admin Product Management
+
+Status: backend complete, frontend pending
+
+Backend complete:
+
+- admin-only create product endpoint
+- admin-only update product endpoint
+- soft delete through `isActive: false`
+- reactivation supported via generic update endpoint
+
+Frontend next:
+
+- admin products dashboard
+- create form
+- edit form
+- activate/deactivate controls
+- admin-only navigation entry points
+
+Why this is next:
+
+- catalog maintenance should stop depending on direct database edits
+- this is the first real store-owner workflow
+
+## Phase 9: Admin Order Management
+
+Status: not started
+
+Planned work:
+
+- admin orders list
+- status updates
+- pending / confirmed / cancelled workflow
+
+Why it comes after admin products:
+
+- catalog management is the more immediate operational need
+- order status management is easier once admin routing patterns already exist
+
+## Phase 10: Browse Improvements
+
+Status: not started
+
+Planned work:
+
+- category filter
+- search
+- sort
+- better catalog browsing UX
+
+Why it is not first anymore:
+
+- the project already has a usable basic storefront
+- admin tooling is more urgent right now than browse polish
+
+## Phase 11: Deployment and Final Polish
+
+Status: not started
+
+Planned work:
+
+- shared layouts cleanup
+- loading/error/empty state polish
+- responsive refinement
+- production env setup
+- deployment
+
+## Recommended Working Pattern
+
+Continue using vertical slices:
+
+1. define the data and route contract
+2. build the backend path
+3. test the endpoint
+4. build the frontend page or component
+5. connect the UI to the endpoint
+6. handle loading, error, and empty states
+7. document the slice
+
+This has worked well so far and should remain the default workflow.
+
+## Branching Strategy
+
+Keep doing:
+
+- one feature branch per slice
+- merge to `main` only after the slice works end to end
+
+Recommended pattern:
+
+```bash
+git checkout -b feature/<feature-name>
+git add .
+git commit -m "<feature message>"
+git push origin feature/<feature-name>
+git checkout main
+git merge feature/<feature-name>
+git push origin main
 ```
-/api/products?category=decor&sort=price_asc&search=lamp
-```
 
-### Why Here
-- Extends the catalog naturally
-- Easier after basic listing already works
+## Near-Term Backlog
 
-### What You Learn
-- Query parameters
-- Dynamic database queries
-- UI state tied to URL or filters
+Priority order:
 
----
+1. frontend admin product management
+2. admin order management
+3. search/filter/sort
+4. order detail page
+5. customer-facing order numbers
+6. deployment polish
 
-## Phase 4: Cart
+## Features To Defer
 
-**Goal:** Let users collect products before checkout.
+Do not prioritize these yet:
 
-### Build
-- Add to cart
-- Remove from cart
-- Change quantity
-- Cart summary
-- Subtotal calculation
-
-### Recommended Start
-- Local cart in frontend state or `localStorage`
-
-### Why Not Backend Cart First
-- Faster to build
-- Easier to debug
-- Enough for MVP learning
-
-### What You Learn
-- State management
-- Shared app data
-- Pricing calculations
-
----
-
-## Phase 5: Authentication
-
-**Goal:** Support customer accounts and admin protection.
-
-### Build
-- Register
-- Login
-- Logout
-- Password hashing
-- Auth token handling
-- Protected routes
-
-### Later Use
-- Order history
-- Saved user data
-- Admin product management
-
-### Why After Cart
-- You can build storefront behavior first without auth complexity
-- Then add identity and access control
-
-### What You Learn
-- Auth flow
-- Secure backend practices
-- Route protection
-
----
-
-## Phase 6: Checkout Skeleton
-
-**Goal:** Convert a cart into an order.
-
-### Build
-- Checkout page
-- Shipping info form
-- Order summary
-- Create order endpoint
-- Order and order item records
-- Fake payment status or cash-on-delivery placeholder
-
-### Why Before Real Payment
-- You need the order flow working first
-- Payment integration is easier after the order model exists
-
-### What You Learn
-- Multi-step flow
-- Transactional thinking
-- Order data modeling
-
----
-
-## Phase 7: Admin Product Management
-
-**Goal:** Manage the store inventory from your app.
-
-### Build
-- Admin login guard
-- Create product
-- Edit product
-- Delete product
-- Upload image strategy *(later)*
-
-### Why Here
-- Once catalog and auth exist, admin flows become natural
-- Easier than building admin before product data structure is stable
-
-### What You Learn
-- Protected CRUD
-- Form handling
-- Validation
-
----
-
-## Phase 8: Order History and Basic Account Area
-
-**Goal:** Let users see what they bought.
-
-### Build
-- User profile page
-- Order history list
-- Order detail view
-
-### Why
-- Completes the customer side of the app
-- Uses auth and order data you already built
-
----
-
-## Phase 9: Polish
-
-**Goal:** Make the MVP feel complete.
-
-### Build
-- Loading states
-- Error states
-- Empty states
-- Responsive polish
-- Form validation improvements
-- Reusable UI cleanup
-- SEO basics for product pages
-
-### Why Last
-- Polish matters most after the main flows exist
-
----
-
-## Recommended Build Order Inside Each Phase
-
-For each feature, follow this sequence:
-
-1. Define the database/data shape
-2. Build backend endpoint
-3. Test endpoint
-4. Build frontend UI
-5. Connect UI to endpoint
-6. Handle loading / error / empty states
-
-> This should be your default workflow.
-
----
-
-## Best Immediate Next Step
-
-**Start Phase 2 now.** Build this exact slice:
-
-- [ ] Prisma model: `Category`
-- [ ] Prisma model: `Product`
-- [ ] Run migration
-- [ ] Seed sample NestCraft home-item products
-- [ ] Create `GET /api/products`
-- [ ] Create products page in frontend
-- [ ] Render product cards from API
-
-> This is the right next milestone because it gives you your first real ecommerce feature.
-
----
-
-## Simple MVP Feature List
-
-### ✅ Include in MVP
-- Home page
-- Products page
-- Product detail page
-- Category filter
-- Search
-- Cart
-- Auth
-- Checkout skeleton
-- Admin product CRUD
-- Order history
-
-### ❌ Do Not Add Yet
 - Stripe
-- Coupons
-- Reviews
-- Wishlist
-- Analytics
-- Inventory syncing
-- Email system
+- coupons
+- reviews
+- wishlist
+- analytics
+- email system
+- inventory sync
 
-> These are phase-2 features after the MVP works.
+These belong after the admin and storefront core are stable.

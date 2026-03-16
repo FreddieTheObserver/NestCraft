@@ -1,10 +1,10 @@
 # Admin Product Endpoints
 
-This document covers the admin-only backend endpoints used to create, update, and deactivate products.
+This document covers the admin-only backend endpoints used to manage the product catalog.
 
 ## Goal
 
-Allow store administrators to manage the product catalog without editing the database manually.
+Allow administrators to create products, update products, and hide products from the storefront without editing the database manually.
 
 Current endpoints:
 
@@ -13,6 +13,18 @@ POST /api/products
 PATCH /api/products/:id
 PATCH /api/products/:id/deactivate
 ```
+
+## Why This Feature Exists
+
+Before these endpoints existed, product management depended on:
+
+- seed scripts
+- Prisma Studio
+- direct database edits
+
+That was acceptable while the project was still proving out the storefront. It stops being acceptable once the app needs a real store-owner workflow.
+
+These endpoints are the first backend step toward a usable admin panel.
 
 ## Files Involved
 
@@ -25,28 +37,7 @@ PATCH /api/products/:id/deactivate
 - [http.ts](c:/Users/user/NestCraft/server/src/utils/http.ts)
 - [schema.prisma](c:/Users/user/NestCraft/server/prisma/schema.prisma)
 
-## Why These Endpoints Exist
-
-Before this feature, the catalog could only be changed by:
-
-- seed scripts
-- Prisma Studio
-- direct database edits
-
-That is fine early on, but it does not scale once the storefront is active. Admin product endpoints are the first real store-management capability.
-
-## Access Control
-
-These write endpoints are protected by both:
-
-- `requireAuth`
-- `requireAdmin`
-
-That means:
-
-- missing token -> `401`
-- invalid token -> `401`
-- logged-in non-admin user -> `403`
+## Access Model
 
 Public product reads remain open:
 
@@ -55,11 +46,40 @@ GET /api/products
 GET /api/products/:slug
 ```
 
-Only write operations are admin-only.
+Catalog writes are protected by both:
 
-## Product Model Fields Managed By Admin
+- `requireAuth`
+- `requireAdmin`
 
-The admin endpoints currently manage these fields from the `Product` model:
+That means:
+
+- missing token -> `401`
+- invalid token -> `401`
+- authenticated non-admin user -> `403`
+
+This is the correct split:
+
+- browsing the catalog is public
+- changing the catalog is privileged
+
+## Important Prerequisite: Real Admin Token
+
+You need an actual admin user to test these routes.
+
+Setting the `role` field to `admin` in the database is only part of the work. After changing the role, the user must log in again so a new JWT is issued with:
+
+```json
+{
+  "userId": 1,
+  "role": "admin"
+}
+```
+
+If the token was issued before the role change, `requireAdmin` will still reject the request.
+
+## Product Fields Managed By Admin
+
+The current endpoints manage these `Product` fields:
 
 - `name`
 - `slug`
@@ -71,19 +91,17 @@ The admin endpoints currently manage these fields from the `Product` model:
 - `isFeatured`
 - `isActive`
 
-This is enough for a practical first admin product workflow.
+That is enough for a first real product-management workflow:
+
+- create a new product
+- edit core product information
+- change stock
+- feature or unfeature products
+- hide or reactivate products
 
 ## Route Design
 
-The route layer in [product.ts](c:/Users/user/NestCraft/server/src/routes/product.ts) keeps public reads and admin writes together.
-
-That is acceptable at this stage because:
-
-- the product resource stays in one place
-- read and write concerns are still easy to reason about
-- admin protection is explicit on the write routes
-
-Current structure:
+The product router keeps public read routes and admin write routes together:
 
 ```ts
 productRouter.get("/", getProducts);
@@ -114,25 +132,53 @@ productRouter.patch(
 );
 ```
 
+Why this is acceptable:
+
+- the resource stays centralized
+- read and write concerns are still easy to scan
+- write protection is explicit at the route layer
+
+At a larger scale, it might make sense to split admin product routes into a separate router, but it is not necessary yet.
+
+## Request Flow
+
+The write-path lifecycle is now:
+
+1. request hits the product route
+2. `requireAuth` verifies the bearer token
+3. `requireAdmin` checks the JWT role
+4. `validate(...)` parses params and/or body
+5. controller receives already-validated input
+6. service applies business rules and Prisma queries
+7. controller returns success data or standardized errors
+
+That is the intended separation:
+
+- middleware handles auth and validation
+- controller handles HTTP concerns
+- service handles business logic
+
 ## Validation Rules
 
-Validation happens before the controller runs.
+Validation happens before controller execution.
 
-### `POST /api/products`
+## `POST /api/products`
 
 Uses `createProductSchema`.
 
 Checks:
 
-- name length
-- URL-safe slug
-- minimum description length
-- positive price
-- non-negative stock
-- valid image URL if provided
-- positive `categoryId`
+- `name` has minimum length
+- `slug` is URL-safe
+- `description` has minimum length
+- `price` is positive
+- `stock` is a non-negative integer
+- `imageUrl` is a valid URL if provided
+- `categoryId` is a positive integer
 
-### `PATCH /api/products/:id`
+This route expects a complete create payload.
+
+## `PATCH /api/products/:id`
 
 Uses:
 
@@ -142,92 +188,67 @@ Uses:
 Checks:
 
 - `id` is a positive integer
-- provided fields are valid
+- all provided fields are individually valid
 - at least one field exists in the patch body
 
-### `PATCH /api/products/:id/deactivate`
+This is important because patch routes should not accept an empty object and pretend an update happened.
+
+## `PATCH /api/products/:id/deactivate`
 
 Uses:
 
 - `productIdParamsSchema`
 
-Only the route param is validated because the route body is not needed.
+No body is required because the route expresses a single action:
 
-## Controller Responsibility
+- set `isActive` to `false`
+
+## Controller Responsibilities
 
 The controller in [productController.ts](c:/Users/user/NestCraft/server/src/controllers/productController.ts) handles:
 
-- HTTP status codes
+- status codes
+- success JSON responses
 - mapping service errors to API errors
-- returning JSON responses
 
 It does not own:
 
-- validation rules
-- database queries
-- business rules like slug uniqueness or category existence
+- request validation
+- category existence queries
+- slug uniqueness checks
+- product existence checks
 
-That work stays in the service and validation layers.
+That logic lives in the service layer.
 
-## Service Responsibility
+## Service Responsibilities
 
-The service in [productService.ts](c:/Users/user/NestCraft/server/src/services/productService.ts) owns the real business logic.
+The service in [productService.ts](c:/Users/user/NestCraft/server/src/services/productService.ts) owns the business rules.
 
-### Create product
+## Create
 
 `createProduct(data)`:
 
-- checks that the category exists
-- checks that the slug is not already in use
-- normalizes empty image values to `null`
-- creates the product with Prisma
+- checks the category exists
+- checks the slug is unique
+- normalizes `imageUrl`
+- sets default booleans if omitted
+- creates the record with Prisma
 
-### Update product
+One concrete bug already caught in this path was the wrong use of `findMany()` for slug uniqueness. Because an empty array is truthy in JavaScript, that check caused `SLUG_ALREADY_IN_USE` to fire for every create request. The fix was switching to `findUnique()`.
+
+That bug is a good reminder that service-layer business checks need exact query semantics.
+
+## Update
 
 `updateProduct(id, data)`:
 
-- checks that the product exists
-- checks the category if `categoryId` is being changed
-- checks slug uniqueness if the slug is being changed
-- applies partial updates
+- checks the product exists
+- checks the category exists if `categoryId` changes
+- checks slug uniqueness if `slug` changes
+- applies partial updates only
 - allows `imageUrl` to be cleared to `null`
 
-### Deactivate product
-
-`deactivateProduct(id)`:
-
-- checks that the product exists
-- updates `isActive` to `false`
-
-This is a soft-delete pattern.
-
-## Soft Delete Behavior
-
-The deactivate route does not remove the database row.
-
-Instead, it sets:
-
-```ts
-isActive: false
-```
-
-That matters because:
-
-- the product can be reactivated later
-- order history still keeps product references
-- admin can temporarily hide a product without destroying data
-
-## Reactivating A Product
-
-There is no separate `activate` endpoint right now.
-
-Instead, reactivation is already supported through:
-
-```http
-PATCH /api/products/:id
-```
-
-with a body like:
+This is the route that also supports reactivation:
 
 ```json
 {
@@ -235,32 +256,77 @@ with a body like:
 }
 ```
 
-So the current system supports:
+## Deactivate
 
-- dedicated deactivate route
-- generic update route for reactivation
+`deactivateProduct(id)`:
 
-That is a reasonable design for this stage.
+- checks the product exists
+- sets `isActive` to `false`
 
-## Error Cases
+This is intentionally a soft delete, not a hard delete.
 
-Current business-error mapping:
+## Why Soft Delete Was Chosen
 
-- missing category -> `CATEGORY_NOT_FOUND`
-- duplicate slug -> `SLUG_ALREADY_IN_USE`
-- missing product on update/deactivate -> `PRODUCT_NOT_FOUND`
+The deactivate route does not remove the row from the database.
 
-Validation failures return:
+It sets:
+
+```ts
+isActive: false
+```
+
+Why that is the right choice here:
+
+- the product can be restored later
+- old order history can still reference the product
+- the storefront can hide products without losing data
+
+Hard delete would make early product management riskier than necessary.
+
+## Reactivating A Product
+
+There is no dedicated `PATCH /api/products/:id/activate` route yet.
+
+That is acceptable because reactivation is already supported by:
+
+```http
+PATCH /api/products/:id
+```
+
+with:
+
+```json
+{
+  "isActive": true
+}
+```
+
+So the current design is:
+
+- dedicated route for deactivation
+- generic patch route for reactivation
+
+That is a pragmatic compromise for this project stage.
+
+## Error Mapping
+
+Current business errors:
+
+- `CATEGORY_NOT_FOUND`
+- `SLUG_ALREADY_IN_USE`
+- `PRODUCT_NOT_FOUND`
+
+Validation errors:
 
 - `VALIDATION_ERROR`
 
-Auth failures return:
+Auth/role errors:
 
 - `UNAUTHORIZED`
 - `INVALID_TOKEN`
 - `FORBIDDEN`
 
-These use the shared API error shape from [http.ts](c:/Users/user/NestCraft/server/src/utils/http.ts).
+All of these use the shared API error envelope from [http.ts](c:/Users/user/NestCraft/server/src/utils/http.ts).
 
 ## Example Create Request
 
@@ -300,6 +366,20 @@ Content-Type: application/json
 }
 ```
 
+## Example Reactivation Request
+
+```http
+PATCH /api/products/1
+Authorization: Bearer <admin-token>
+Content-Type: application/json
+```
+
+```json
+{
+  "isActive": true
+}
+```
+
 ## Example Deactivate Request
 
 ```http
@@ -307,17 +387,28 @@ PATCH /api/products/1/deactivate
 Authorization: Bearer <admin-token>
 ```
 
+## What To Test
+
+Minimum backend test matrix:
+
+- admin can create a product
+- admin can update a product
+- admin can deactivate a product
+- admin can reactivate a product through `PATCH /api/products/:id`
+- non-admin user gets `403`
+- missing token gets `401`
+- invalid category gets `400`
+- duplicate slug gets `409`
+- bad payload gets `400 VALIDATION_ERROR`
+
 ## What Success Looks Like
 
 This feature is working correctly when:
 
-- admins can create products
-- admins can update products
-- admins can deactivate products
-- non-admin users get `403`
-- duplicate slugs get `409`
-- bad payloads fail in validation middleware
-- deactivated products disappear from the public storefront because public reads filter on `isActive: true`
+- admins can maintain the catalog through the API
+- public users cannot access write operations
+- deactivated products stop appearing in public catalog reads because those reads filter on `isActive: true`
+- reactivation works without adding a second activation-specific endpoint
 
 ## Next Logical Step
 
@@ -326,4 +417,5 @@ Once these endpoints are stable, the next frontend slice is:
 - admin products list page
 - create product form
 - edit product form
+- activate/deactivate controls
 - admin route protection

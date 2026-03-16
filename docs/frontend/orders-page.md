@@ -33,6 +33,19 @@ This page is the first real account-facing screen built on top of:
 - [AuthContext.tsx](c:/Users/user/NestCraft/client/src/context/AuthContext.tsx)
 - [ProtectedRoute.tsx](c:/Users/user/NestCraft/client/src/components/ProtectedRoute.tsx)
 
+## Why The Page Exists
+
+Checkout creates orders, but users also need a place to review what they bought.
+
+This page closes that loop:
+
+1. place order
+2. persist order in backend
+3. open `/orders`
+4. review purchase history
+
+Without this page, order creation would exist only as a transient confirmation state.
+
 ## Why The Page Is Protected
 
 The `/orders` route is wrapped in `ProtectedRoute` in [index.tsx](c:/Users/user/NestCraft/client/src/routes/index.tsx).
@@ -42,17 +55,19 @@ That means:
 - unauthenticated users are redirected to `/login`
 - only authenticated users can open purchase history
 
-This is required because order history is private account data.
+This is required because orders are private account data.
+
+Frontend protection improves user flow, but the backend still enforces the real security boundary through `GET /api/orders/me`.
 
 ## Request Flow
 
 The page works in this sequence:
 
-1. the router matches `/orders`
-2. `ProtectedRoute` verifies the user is logged in
+1. router matches `/orders`
+2. `ProtectedRoute` confirms the user is logged in
 3. `OrdersPage` reads the token from [AuthContext.tsx](c:/Users/user/NestCraft/client/src/context/AuthContext.tsx)
 4. `getMyOrders(token)` in [orders.ts](c:/Users/user/NestCraft/client/src/services/orders.ts) sends `GET /api/orders/me`
-5. the backend verifies the bearer token and returns only that user's orders
+5. backend verifies the bearer token and returns only that user's orders
 6. React stores the result in local state and renders the page
 
 This keeps responsibilities clean:
@@ -70,13 +85,15 @@ The request function lives in [orders.ts](c:/Users/user/NestCraft/client/src/ser
 export async function getMyOrders(token: string): Promise<OrderResponse[]>
 ```
 
-That file owns the API contract for orders. The page should not build headers or raw `fetch()` calls inline.
+That file owns the API contract for orders.
 
-This is the right separation because:
+Why that separation matters:
 
-- page components stay focused on rendering
-- API calls stay reusable
-- auth headers are handled in one place
+- the page does not build auth headers inline
+- response typing stays centralized
+- API-level error parsing stays reusable
+
+This becomes more important as more order endpoints are added later.
 
 ## State Handling In The Page
 
@@ -93,43 +110,52 @@ That gives the page explicit handling for:
 - empty state if the user has no orders yet
 - success state when orders exist
 
-This is important because account pages should handle all four conditions cleanly.
+This is the right structure for account-style pages.
 
 ## What The Page Renders
 
 The page renders:
 
-- a shared `StoreHeader`
+- shared `StoreHeader`
 - a summary section showing total orders and total spent
 - a list of order cards
 - nested line items for each order
-- delivery details per order
+- delivery details for each order
 - subtotal, shipping, and total blocks
 
-Each order card includes enough information to answer the normal customer questions:
+Each order card is designed to answer the common customer questions:
 
 - when was this placed
 - how many items were in it
 - what products were purchased
-- where was it shipped
-- how much did it cost
-- what is the order status
+- where is it being delivered
+- what did it cost
+- what is its current status
+
+## Why The Summary Section Exists
+
+The page includes a high-level snapshot:
+
+- number of orders
+- total spent across those orders
+
+This is not strictly required, but it improves the account feel of the page and makes the history view more useful at a glance.
 
 ## Why Product Links Are Included
 
-Each order item includes product summary data from the backend:
+Each order item includes backend-provided product summary data:
 
 - `name`
 - `slug`
 - `imageUrl`
 
-So the page can link each purchased product back to:
+That allows the UI to link purchased products back to:
 
 ```text
 /products/:slug
 ```
 
-That improves the usefulness of purchase history and avoids another API call.
+This improves usability without requiring another API request.
 
 ## Why The Page Can Show `Order #3` For A User's First Purchase
 
@@ -156,6 +182,18 @@ Important distinction:
 
 The page is correctly showing what the backend returns.
 
+## Error Behavior
+
+Because the service now uses the shared API error reader, the page can show more accurate messages than before.
+
+That means failures like:
+
+- invalid token
+- expired token
+- backend fetch failure
+
+can surface their actual API message instead of a generic fallback whenever the response is parseable.
+
 ## Relationship To Checkout
 
 This page depends on successful use of:
@@ -166,29 +204,39 @@ POST /api/orders
 
 That endpoint creates the order rows. This page loads and displays those rows later.
 
-The user flow is:
+The full user flow is:
 
 1. add items to cart
 2. complete checkout
 3. backend saves the order
 4. `/orders` loads and displays the saved order history
 
-## What Success Looks Like
+## What To Test
 
-The page is working correctly when:
+This page is working correctly when:
 
 - logged-in users can open `/orders`
 - logged-out users are redirected to `/login`
 - users only see their own orders
-- loading, error, and empty states all render correctly
+- loading state renders correctly
+- empty state renders correctly
+- error state renders correctly
 - order items display correct quantities and prices
 - product links point back to product detail pages
+
+## What Success Looks Like
+
+This page is complete enough for the current stage when:
+
+- purchase history is reliable after checkout
+- the UI clearly communicates order contents and totals
+- the page feels like part of an account area, not just raw JSON mapped into a component
 
 ## Reasonable Next Improvements
 
 The next useful improvements after this page are:
 
-- a dedicated order-detail page
-- a customer account dashboard
-- customer-facing order numbers instead of raw database IDs
+- dedicated order-detail page
+- customer-facing order numbers instead of raw IDs
+- customer account dashboard
 - admin order management

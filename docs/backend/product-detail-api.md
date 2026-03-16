@@ -1,6 +1,6 @@
 # GET /api/products/:slug
 
-This note documents the product detail endpoint for `NestCraft`.
+This document covers the product detail endpoint for `NestCraft`.
 
 Endpoint:
 
@@ -22,115 +22,203 @@ Example:
 /products/oak-bedside-lamp
 ```
 
-## Why Use Slug Instead Of ID
+## Why Slug Was Chosen Instead Of ID
 
-For ecommerce, `slug` is usually better than `id` because it gives:
+For storefront routes, `slug` is the better public identifier.
+
+Benefits:
 
 - cleaner URLs
-- more readable product links
-- better SEO-friendly page paths
-- no need to expose internal numeric IDs
+- easier to read and share
+- more professional-looking product links
+- better SEO behavior than raw numeric IDs
 
-## Request Flow
-
-The detail request follows the same backend structure as the products list:
-
-1. route
-2. controller
-3. service
-4. Prisma query
-5. JSON response
+This is why the frontend route and the API route both use `slug`.
 
 ## Files Involved
 
 - [product.ts](c:/Users/user/NestCraft/server/src/routes/product.ts)
 - [productController.ts](c:/Users/user/NestCraft/server/src/controllers/productController.ts)
 - [productService.ts](c:/Users/user/NestCraft/server/src/services/productService.ts)
+- [productSchemas.ts](c:/Users/user/NestCraft/server/src/validation/productSchemas.ts)
+- [validate.ts](c:/Users/user/NestCraft/server/src/middleware/validate.ts)
+- [http.ts](c:/Users/user/NestCraft/server/src/utils/http.ts)
 - [prisma.ts](c:/Users/user/NestCraft/server/src/lib/prisma.ts)
+
+## Request Flow
+
+The detail request follows the same layered flow as the list route:
+
+1. route
+2. params validation
+3. controller
+4. service
+5. Prisma query
+6. JSON response
+
+That separation keeps the slug contract explicit and prevents invalid input from reaching the service.
 
 ## Route Responsibility
 
-The route should define:
+The route in [product.ts](c:/Users/user/NestCraft/server/src/routes/product.ts) defines:
 
-```text
-GET /api/products/:slug
+```ts
+productRouter.get("/:slug", validate({ params: productSlugParamsSchema }), getProduct);
 ```
 
-Its job is only to map the URL parameter to the controller.
+That means:
+
+- the path parameter is validated before controller logic
+- malformed slugs fail early
+
+This is better than doing manual string checks inside the controller.
+
+## Parameter Validation
+
+The slug is validated by [productSchemas.ts](c:/Users/user/NestCraft/server/src/validation/productSchemas.ts).
+
+Checks:
+
+- slug exists
+- slug is not empty
+- slug matches the expected URL-safe format
+
+This matters because the route should reject malformed values like:
+
+- spaces
+- uppercase/invalid symbols
+- empty path fragments
+
+Even though the frontend is generating product links, the backend still owns the real contract.
 
 ## Controller Responsibility
 
-The controller should:
+The controller in [productController.ts](c:/Users/user/NestCraft/server/src/controllers/productController.ts):
 
-- read `req.params.slug`
-- validate that the slug exists
-- call the service
-- return:
-  - `200` when the product exists
-  - `404` when not found
-  - `500` on unexpected failure
+- reads the validated slug
+- calls the service
+- returns the product on success
+- maps not-found and unexpected failures into API responses
+
+It does not:
+
+- validate the slug itself
+- build the Prisma query directly
+
+That logic stays in validation and service layers.
 
 ## Service Responsibility
 
-The service should:
+The service in [productService.ts](c:/Users/user/NestCraft/server/src/services/productService.ts) implements the actual product lookup rule.
 
-- query by `slug`
-- include the related `category`
-- only return active products
+The current query does three important things:
 
-That usually means the Prisma query includes:
+- looks up by `slug`
+- includes `category`
+- filters to `isActive: true`
 
-- `where: { slug, isActive: true }`
-- `include: { category: true }`
+That last rule matters because hidden products should not be publicly accessible through the storefront detail route.
 
-## Response Shape
+## Why `isActive: true` Is Important Here
 
-The response should be one product object including its category.
+If an admin deactivates a product, two things should happen:
 
-That gives the frontend everything it needs for the first detail page:
+1. it disappears from `/api/products`
+2. it should also stop being returned from `/api/products/:slug`
 
-- product name
+That is why the detail query includes the active-product constraint.
+
+Without that, a hidden product could still be viewed if someone knew the slug.
+
+## Current Response Shape
+
+The endpoint returns a single product object with category data included.
+
+Conceptually:
+
+```json
+{
+  "id": 1,
+  "name": "Oak Bedside Lamp",
+  "slug": "oak-bedside-lamp",
+  "description": "A warm wooden bedside lamp for cozy interior spaces.",
+  "price": "49.99",
+  "stock": 12,
+  "imageUrl": "https://...",
+  "isFeatured": true,
+  "isActive": true,
+  "categoryId": 1,
+  "category": {
+    "id": 1,
+    "name": "Lighting",
+    "slug": "lighting",
+    "imageUrl": "https://..."
+  }
+}
+```
+
+This gives the frontend enough data for:
+
+- product title
 - description
-- price
-- image
-- stock
+- hero image
 - category label
+- stock and availability display
+- price
 
-## Testing
+without any secondary request.
 
-Run the backend:
+## Error Behavior
 
-```bash
-npm run dev
-```
+Expected outcomes:
 
-Then test with:
+- valid active slug -> `200`
+- unknown slug -> `404 PRODUCT_NOT_FOUND`
+- malformed slug -> `400 VALIDATION_ERROR`
+- unexpected failure -> `500`
 
-```bash
-curl http://localhost:5000/api/products/oak-bedside-lamp
-```
+That is a strong contract for the frontend because it can distinguish:
 
-Or open:
+- "the slug itself is invalid"
+- "the product does not exist or is inactive"
 
-```text
-http://localhost:5000/api/products/oak-bedside-lamp
-```
+## Why This Endpoint Matters
 
-## What Success Looks Like
+This route is the first step from catalog browsing into a real storefront detail flow.
 
-This endpoint is complete when:
+It enables:
+
+- detail page rendering
+- add-to-cart from a specific product
+- deeper product descriptions
+- richer purchase decision UI
+
+Without this route, the app has a catalog but not a usable product experience.
+
+## What To Test
+
+This endpoint is working correctly when:
 
 - valid slugs return one product
-- missing slugs return `404`
+- unknown slugs return `404`
+- malformed slugs fail validation
 - inactive products are not exposed
-- category data is included in the response
+- category data is included
 
-## Relationship To The Frontend
+## Relationship To Frontend
 
-This endpoint powers the storefront page route:
+This endpoint powers the page route:
 
 ```text
 /products/:slug
 ```
 
-The frontend reads the slug from the URL, calls the API, and renders the product detail page from the returned JSON.
+The frontend reads the slug from the URL, requests this API endpoint, and renders the full product detail page from the returned JSON.
+
+## What Comes Next
+
+The next related improvements after a stable detail endpoint are:
+
+- related products by category
+- richer image handling
+- search/filter/sort in the main catalog

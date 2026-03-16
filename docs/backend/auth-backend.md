@@ -1,234 +1,413 @@
 # Backend Authentication
 
-This note documents the backend authentication implementation plan for `NestCraft`.
+This document explains the current backend authentication implementation for `NestCraft`.
 
-The backend auth flow is built with:
+The auth stack is:
 
-- `Prisma`
-- `PostgreSQL`
+- Express
+- TypeScript
+- Prisma
+- PostgreSQL
 - `bcryptjs`
 - `jsonwebtoken`
-- `Express`
-- `TypeScript`
+- route-level request validation with `zod`
+
+This is no longer just a plan. It describes the authentication code that currently exists in the backend.
 
 ## Goal
 
-Support the first secure account system for the app.
+The purpose of backend auth in this project is to establish user identity and make authorization possible.
 
-The backend auth scope includes:
+Current backend auth scope includes:
 
-1. register
-2. login
-3. JWT generation
-4. protected route middleware
+1. user registration
+2. user login
+3. password hashing
+4. JWT issuance
+5. authenticated route protection
+6. admin-only authorization support
 
-This is the minimum backend auth foundation needed before building frontend login and register pages.
+That foundation is what enabled:
 
-## Why Auth Comes After Cart
+- protected checkout
+- user-specific order history
+- admin-only product management routes
 
-The local cart can work entirely in the frontend.
+## Why Auth Came When It Did
 
-Authentication comes next because it unlocks:
+Auth was not the first feature in the project.
 
-- customer accounts
-- protected routes
-- admin features later
-- future order ownership
-- future backend cart persistence if needed
+The app intentionally started with:
+
+- database setup
+- seeded products
+- public product endpoints
+- storefront product pages
+- a local cart
+
+That sequence was correct because browsing a catalog does not require accounts.
+
+Auth came next when the application needed:
+
+- order ownership
+- protected flows
+- user identity
+- admin permissions
+
+That timing kept early momentum high while avoiding premature security complexity.
+
+## Files Involved
+
+Database and configuration:
+
+- [schema.prisma](c:/Users/user/NestCraft/server/prisma/schema.prisma)
+- [.env](c:/Users/user/NestCraft/server/.env)
+- [env.ts](c:/Users/user/NestCraft/server/src/config/env.ts)
+
+Auth implementation:
+
+- [authService.ts](c:/Users/user/NestCraft/server/src/services/authService.ts)
+- [authController.ts](c:/Users/user/NestCraft/server/src/controllers/authController.ts)
+- [auth.ts](c:/Users/user/NestCraft/server/src/routes/auth.ts)
+- [authMiddleware.ts](c:/Users/user/NestCraft/server/src/middleware/authMiddleware.ts)
+
+Validation and shared response helpers:
+
+- [authSchemas.ts](c:/Users/user/NestCraft/server/src/validation/authSchemas.ts)
+- [validate.ts](c:/Users/user/NestCraft/server/src/middleware/validate.ts)
+- [http.ts](c:/Users/user/NestCraft/server/src/utils/http.ts)
+
+App wiring:
+
+- [app.ts](c:/Users/user/NestCraft/server/src/app.ts)
 
 ## User Model
 
-The first auth model is `User`.
+The `User` model is defined in [schema.prisma](c:/Users/user/NestCraft/server/prisma/schema.prisma).
 
-Recommended fields:
+Key fields:
 
 - `id`
 - `name`
 - `email`
 - `passwordHash`
 - `role`
+- `orders`
 - `createdAt`
 - `updatedAt`
 
 Important rules:
 
-- `email` must be unique
-- passwords must never be stored as plain text
-- `role` should default to `"customer"`
+- `email` is unique
+- raw passwords are never stored
+- `role` defaults to `"customer"`
 
-## Files Involved
-
-The backend auth implementation should use these files:
-
-- [schema.prisma](c:/Users/user/NestCraft/server/prisma/schema.prisma)
-- [.env](c:/Users/user/NestCraft/server/.env)
-- [env.ts](c:/Users/user/NestCraft/server/src/config/env.ts)
-- [authService.ts](c:/Users/user/NestCraft/server/src/services/authService.ts)
-- [authController.ts](c:/Users/user/NestCraft/server/src/controllers/authController.ts)
-- [auth.ts](c:/Users/user/NestCraft/server/src/routes/auth.ts)
-- [authMiddleware.ts](c:/Users/user/NestCraft/server/src/middleware/authMiddleware.ts)
-- [app.ts](c:/Users/user/NestCraft/server/src/app.ts)
+That last field is what later made `requireAdmin` possible without redesigning the model.
 
 ## Database Step
 
-First, add the `User` model to Prisma.
+The authentication feature required a Prisma migration that added the `User` table.
 
-Then run:
+Typical commands:
 
 ```bash
 npx prisma migrate dev --name add-user-auth
 npx prisma generate
 ```
 
-Explanation:
+That created the model in PostgreSQL and refreshed generated Prisma types.
 
-- the migration creates the `User` table
-- Prisma client generation refreshes the typed API
+## Packages Used
 
-## Packages Required
-
-Install:
+Runtime packages:
 
 ```bash
 npm install bcryptjs jsonwebtoken
+```
+
+Type support:
+
+```bash
 npm install -D @types/jsonwebtoken
 ```
 
-Explanation:
+Why they are used:
 
-- `bcryptjs` hashes and verifies passwords
-- `jsonwebtoken` signs and verifies JWTs
+- `bcryptjs`
+  - hashes passwords during register
+  - compares candidate passwords during login
+- `jsonwebtoken`
+  - signs JWTs
+  - verifies bearer tokens in middleware
 
 ## Environment Variables
 
-Add this to [server/.env](c:/Users/user/NestCraft/server/.env):
+Backend auth depends on `JWT_SECRET` in [server/.env](c:/Users/user/NestCraft/server/.env).
 
-```env
-JWT_SECRET=replace_this_with_a_long_random_secret
-```
+That secret is used in two places:
 
-Explanation:
-The JWT secret is used to sign tokens and verify them later in middleware.
+- token signing
+- token verification
+
+It must live in environment configuration, not in the source code.
+
+## Auth Architecture
+
+The current auth layer follows the same separation pattern used elsewhere in the project:
+
+- route
+- controller
+- service
+- middleware
+
+Each layer has a different responsibility.
+
+### Route responsibility
+
+[auth.ts](c:/Users/user/NestCraft/server/src/routes/auth.ts) defines the public auth endpoints:
+
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+
+These routes also attach validation middleware before controller execution.
+
+### Controller responsibility
+
+[authController.ts](c:/Users/user/NestCraft/server/src/controllers/authController.ts) handles HTTP concerns:
+
+- read already-validated input
+- call the service
+- translate known service failures into status codes
+- return JSON
+
+It does not:
+
+- hash passwords
+- talk to Prisma directly for auth logic
+- parse bearer tokens
+
+### Service responsibility
+
+[authService.ts](c:/Users/user/NestCraft/server/src/services/authService.ts) owns auth business logic:
+
+- find user by email
+- detect duplicate email
+- hash password
+- compare password hashes
+- sign JWTs
+- shape the safe response object
+
+### Middleware responsibility
+
+[authMiddleware.ts](c:/Users/user/NestCraft/server/src/middleware/authMiddleware.ts) owns request-time token checks and authorization checks.
+
+That separation is important. It keeps controller code thin and makes auth reusable across many routes.
 
 ## Register Flow
 
-The backend register flow should be:
+The current register flow is:
 
-1. receive `name`, `email`, and `password`
-2. check if the email already exists
-3. hash the password
-4. create the user in the database
-5. sign a JWT
-6. return safe user data plus token
+1. request hits `POST /api/auth/register`
+2. `validate({ body: registerSchema })` checks the body shape
+3. controller receives validated `name`, `email`, and `password`
+4. controller calls `registerUser(...)`
+5. service checks whether the email already exists
+6. service hashes the password with bcrypt
+7. service creates the user
+8. service signs a JWT
+9. controller returns safe user data plus token
 
-Important:
-
-- return `passwordHash` never
-- return only safe fields such as `id`, `name`, `email`, and `role`
+This means that by the time the service runs, the request shape is already trusted. The service only has to care about business rules, not whether `email` is missing.
 
 ## Login Flow
 
-The backend login flow should be:
+The current login flow is:
 
-1. receive `email` and `password`
-2. find the user by email
-3. compare the incoming password with `passwordHash`
-4. if valid, sign a JWT
-5. return safe user data plus token
+1. request hits `POST /api/auth/login`
+2. route-level validation checks `email` and `password`
+3. controller calls `loginUser(...)`
+4. service looks up the user by email
+5. service compares the incoming password to `passwordHash`
+6. if valid, service signs a JWT
+7. controller returns safe user data plus token
 
 If credentials are invalid:
 
-- return `401`
+- the service throws `INVALID_CREDENTIALS`
+- the controller maps that to `401`
 
-## Why Password Hashing Matters
+## Password Hashing
 
-Passwords should never be stored directly in PostgreSQL.
+Passwords are never stored directly.
 
-Instead:
+The register path uses bcrypt to convert the raw password into a hash before it is written to PostgreSQL.
 
-- hash them with `bcryptjs`
-- store the hash
-- compare input passwords against the hash during login
+The login path never compares raw strings against the database. It compares the submitted password against the stored hash.
 
-This is a basic security requirement.
+This is baseline security behavior. It is not optional.
 
-## Why JWT Is Used
+## JWT Design
 
-JWT is used for the first auth implementation because it is:
-
-- simple
-- common in PERN apps
-- easy to connect to a React frontend
-
-The token should include a small payload such as:
+The auth service signs a token that currently contains:
 
 - `userId`
 - `role`
 
-## Controller Responsibilities
+This is enough for the current project stage because the backend needs to know:
 
-The auth controller should:
+- who the user is
+- whether the user is an admin
 
-- validate request body fields
-- call the service
-- return the appropriate status code
-- translate service errors into useful API responses
+The token currently expires after seven days.
 
-Recommended status behavior:
+This is a practical tradeoff for the current implementation. The project does not yet implement refresh tokens or server-side token revocation.
 
-- `201` for successful register
-- `200` for successful login
-- `400` for missing input
-- `401` for invalid credentials
-- `409` for duplicate email
-- `500` for unexpected failures
+## Safe Response Shape
 
-## Service Responsibilities
+Successful register and login responses return this shape:
 
-The auth service should:
-
-- interact with Prisma
-- hash passwords
-- compare password hashes
-- sign JWTs
-- return safe user + token data
-
-This keeps controllers small and focused on HTTP handling.
-
-## Route Responsibilities
-
-The backend should expose:
-
-```http
-POST /api/auth/register
-POST /api/auth/login
+```json
+{
+  "user": {
+    "id": 1,
+    "name": "Jane",
+    "email": "jane@example.com",
+    "role": "customer"
+  },
+  "token": "..."
+}
 ```
 
-The route file should only map these paths to the controller functions.
+This shape matters because the frontend auth context depends on it directly.
+
+What is intentionally excluded:
+
+- `passwordHash`
+
+The backend should never return it.
+
+## Route-Level Validation
+
+Auth request validation now happens at the route level with `zod`.
+
+That is a meaningful improvement over the earlier controller-heavy approach.
+
+Validation now checks things like:
+
+- name length
+- valid email format
+- minimum password length
+
+Because the route validates input first, the controller no longer needs repetitive checks such as:
+
+- `if (!email || !password)`
+- `if (!name || !email || !password)`
+
+That work now belongs to the validation layer, not the controller.
+
+## Shared Error Format
+
+Auth errors now use the shared API error format from [http.ts](c:/Users/user/NestCraft/server/src/utils/http.ts).
+
+Example:
+
+```json
+{
+  "error": {
+    "code": "INVALID_CREDENTIALS",
+    "message": "Invalid credentials"
+  }
+}
+```
+
+This matters because the frontend can now parse and show backend messages consistently instead of flattening everything into generic failure text.
 
 ## Auth Middleware
 
-The auth middleware is for future protected routes.
+[authMiddleware.ts](c:/Users/user/NestCraft/server/src/middleware/authMiddleware.ts) provides two important middleware functions.
 
-Its job is:
+### `requireAuth`
 
-1. read the `Authorization` header
-2. check for `Bearer <token>`
-3. verify the JWT
-4. attach decoded user data to the request
-5. reject invalid or missing tokens
+This middleware:
 
-This will later be used for:
+- reads the `Authorization` header
+- expects `Bearer <token>`
+- verifies the JWT
+- attaches the decoded payload to `req.user`
 
-- admin routes
-- user account routes
-- protected checkout steps
+Failure cases:
+
+- missing header or wrong prefix -> `401`
+- invalid or expired token -> `401`
+
+### `requireAdmin`
+
+This middleware assumes `requireAuth` has already run.
+
+It checks:
+
+- whether `req.user` exists
+- whether `req.user.role === "admin"`
+
+Failure cases:
+
+- no authenticated user -> `401`
+- authenticated but not admin -> `403`
+
+This is what currently protects the admin product write endpoints.
+
+## Role Changes And Token Refresh
+
+One practical detail matters here:
+
+If you change a user's `role` manually in the database from `customer` to `admin`, the old JWT does not update automatically.
+
+The user must log in again so a new token is issued with the new `role` value.
+
+Why:
+
+- the middleware reads the role from the token payload
+- it does not re-read the user row from the database on every request
+
+This behavior matters when testing admin-only routes.
+
+## What Backend Auth Enables
+
+Once backend auth existed, the project could safely support:
+
+- protected checkout
+- order ownership
+- `/api/orders/me`
+- admin-only product creation and updates
+
+That made auth one of the structural turning points in the backend.
+
+## What Backend Auth Does Not Do Yet
+
+The current backend auth implementation does not yet include:
+
+- refresh tokens
+- password reset
+- email verification
+- OAuth providers
+- server-side logout or token revocation
+
+Those are legitimate future features, but they were correctly deferred because they are not required for the current application stage.
+
+## Status Behavior
+
+Expected auth status behavior:
+
+- `201` for successful register
+- `200` for successful login
+- `400` for validation failure
+- `401` for invalid credentials
+- `409` for duplicate email
+- `500` for unexpected server failure
 
 ## Testing
 
-After backend auth is written, test with:
-
-### Register
+Register:
 
 ```bash
 curl -X POST http://localhost:5000/api/auth/register \
@@ -236,7 +415,7 @@ curl -X POST http://localhost:5000/api/auth/register \
   -d '{"name":"John","email":"john@example.com","password":"secret123"}'
 ```
 
-### Login
+Login:
 
 ```bash
 curl -X POST http://localhost:5000/api/auth/login \
@@ -244,24 +423,43 @@ curl -X POST http://localhost:5000/api/auth/login \
   -d '{"email":"john@example.com","password":"secret123"}'
 ```
 
+Protected route verification:
+
+```http
+GET /api/orders/me
+Authorization: Bearer <token>
+```
+
+Admin verification:
+
+- promote a user to `admin` in the database
+- log in again
+- call an admin-only route such as `POST /api/products`
+
 ## What Success Looks Like
 
-Backend auth is considered ready when:
+Backend auth is working when:
 
 - the `User` table exists
-- register works
-- login works
-- duplicate email is blocked
-- wrong password is rejected
-- JWT is returned
 - password hashes are stored instead of raw passwords
+- register creates new users
+- login issues tokens
+- duplicate email is blocked
+- wrong credentials are rejected
+- protected routes require valid bearer tokens
+- admin routes reject non-admin users
 
-## Next Step
+## Why This Layer Matters
 
-After backend auth works, the next frontend auth slice should be:
+The backend catalog made the storefront possible.
 
-- auth service
-- auth context
-- register page
-- login page
-- protected route component
+The backend auth layer made the storefront accountable.
+
+It is the point where the app stopped being just public product browsing and became a system with:
+
+- user identity
+- protected purchase flow
+- owned orders
+- controlled admin actions
+
+That is why this part of the backend is foundational rather than optional.

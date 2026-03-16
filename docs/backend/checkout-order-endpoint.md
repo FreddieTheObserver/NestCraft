@@ -1,6 +1,6 @@
 # Checkout Order Endpoint
 
-This note documents the current backend checkout implementation for `NestCraft`.
+This document covers the current backend checkout implementation for `NestCraft`.
 
 Endpoint:
 
@@ -8,7 +8,7 @@ Endpoint:
 POST /api/orders
 ```
 
-This is the first backend endpoint that converts cart data into a saved order.
+This is the endpoint that turns cart data into a saved order.
 
 ## Goal
 
@@ -16,36 +16,38 @@ The purpose of this endpoint is to:
 
 1. accept checkout input from the frontend
 2. verify the request belongs to an authenticated user
-3. validate the products and quantities
-4. calculate pricing on the server
-5. create an `Order`
-6. create related `OrderItem` records
-7. decrement product stock safely
+3. validate the request shape before controller execution
+4. load real product data from the database
+5. calculate pricing on the server
+6. create an `Order`
+7. create related `OrderItem` records
+8. decrement stock safely
 
-This is the backend foundation for checkout before any payment gateway is added.
+This is the core backend slice that makes checkout real, even before a payment gateway exists.
 
 ## Why This Endpoint Matters
 
-This is the first step where the app moves from:
+This is the first time the app moves from:
 
 - browsing
 - cart state
 
 into:
 
-- actual order creation
+- persistent order data
 
-That makes it one of the most important backend slices in the ecommerce flow.
+Without `POST /api/orders`, the app has a catalog and cart, but not a real purchase flow.
 
 ## Files Involved
-
-The current implementation uses these files:
 
 - [schema.prisma](c:/Users/user/NestCraft/server/prisma/schema.prisma)
 - [order.ts](c:/Users/user/NestCraft/server/src/routes/order.ts)
 - [orderController.ts](c:/Users/user/NestCraft/server/src/controllers/orderController.ts)
 - [orderService.ts](c:/Users/user/NestCraft/server/src/services/orderService.ts)
+- [orderSchemas.ts](c:/Users/user/NestCraft/server/src/validation/orderSchemas.ts)
 - [authMiddleware.ts](c:/Users/user/NestCraft/server/src/middleware/authMiddleware.ts)
+- [validate.ts](c:/Users/user/NestCraft/server/src/middleware/validate.ts)
+- [http.ts](c:/Users/user/NestCraft/server/src/utils/http.ts)
 - [app.ts](c:/Users/user/NestCraft/server/src/app.ts)
 
 ## Data Models Used
@@ -63,54 +65,54 @@ Relationship summary:
 - one `Order` has many `OrderItem`s
 - one `OrderItem` belongs to one `Product`
 
-This structure preserves the order as a historical snapshot rather than treating the cart itself as permanent data.
+This is the standard ecommerce snapshot model.
 
-## Protected Route
+Why snapshot matters:
+
+- cart is temporary
+- order is permanent
+- `OrderItem.unitPrice` must preserve the purchase price even if the product price changes later
+
+## Route And Middleware Flow
+
+The route in [order.ts](c:/Users/user/NestCraft/server/src/routes/order.ts) is intentionally small:
+
+```ts
+orderRouter.post("/", requireAuth, validate({ body: createOrderSchema }), createOrderHandler);
+```
+
+That means the request path is:
+
+1. `requireAuth`
+2. `validate({ body: createOrderSchema })`
+3. `createOrderHandler`
+
+This is important because the controller should not be doing low-level request-shape validation anymore.
+
+## Authentication Requirement
 
 The route is protected by [authMiddleware.ts](c:/Users/user/NestCraft/server/src/middleware/authMiddleware.ts).
 
-That means:
+Expected header:
 
-- the request must include `Authorization: Bearer <token>`
-- the token is verified before order creation starts
-- the authenticated user ID is attached to `req.user`
+```http
+Authorization: Bearer <token>
+```
+
+If the token is missing or invalid:
+
+- the request fails before order creation starts
 
 Why this matters:
 
 - every order must belong to a user
-- order creation should not be anonymous once auth exists
+- checkout should not be anonymous in the current system
 
-## Route Responsibility
+## Request Validation
 
-The route file [order.ts](c:/Users/user/NestCraft/server/src/routes/order.ts) is intentionally small.
+The request body is validated by [orderSchemas.ts](c:/Users/user/NestCraft/server/src/validation/orderSchemas.ts) before it reaches the controller.
 
-Its job is only to:
-
-- define `POST /`
-- apply `requireAuth`
-- call the controller
-
-This keeps routing separate from business logic.
-
-## Controller Responsibility
-
-The controller in [orderController.ts](c:/Users/user/NestCraft/server/src/controllers/orderController.ts) handles HTTP concerns.
-
-It is responsible for:
-
-- reading `req.user?.userId`
-- reading the request body
-- checking required checkout fields
-- validating that `items` is an array
-- validating the structure of each item
-- calling the order service
-- mapping service errors to HTTP responses
-
-This is the right controller role because it handles request validation and response formatting, but not database logic.
-
-## Request Body Shape
-
-The endpoint expects a request body with:
+The expected body includes:
 
 - `shippingName`
 - `shippingEmail`
@@ -120,7 +122,7 @@ The endpoint expects a request body with:
 - optional `notes`
 - `items`
 
-Each item should contain:
+Each item must contain:
 
 - `productId`
 - `quantity`
@@ -133,7 +135,7 @@ Example request:
   "shippingEmail": "john@example.com",
   "shippingPhone": "0123456789",
   "shippingCity": "Bangkok",
-  "shippingAddress": "123 ถนนสุขุมวิท",
+  "shippingAddress": "123 Sukhumvit Road",
   "notes": "Leave at front desk",
   "items": [
     { "productId": 1, "quantity": 2 },
@@ -144,9 +146,26 @@ Example request:
 
 Why this shape is used:
 
-- shipping details belong to the order record
-- cart items are represented by product IDs and quantities
-- the backend recalculates price data rather than trusting the frontend
+- shipping information belongs to the order record
+- items are represented minimally by product ID and quantity
+- pricing is recalculated on the server
+
+## Controller Responsibility
+
+The controller in [orderController.ts](c:/Users/user/NestCraft/server/src/controllers/orderController.ts) handles:
+
+- reading `req.user?.userId`
+- passing validated body data to the service
+- mapping business errors to HTTP errors
+- returning the created order
+
+It no longer owns:
+
+- manual shipping-field checks
+- array-shape checks for items
+- ad hoc request-body validation
+
+Those concerns moved into `zod` validation at the route layer.
 
 ## Service Responsibility
 
@@ -158,128 +177,135 @@ It is responsible for:
 - rejecting invalid quantities
 - loading active products from the database
 - rejecting invalid products
-- building normalized order items
-- checking available stock
-- decrementing stock safely
+- building normalized items
+- checking stock and decrementing it safely
 - calculating:
   - `subtotal`
   - `shippingFee`
   - `totalAmount`
-- creating the order and order items in one transaction
+- creating the order and nested order items inside a transaction
 
-This is the correct place for checkout logic because it is business logic, not request/response handling.
+This is exactly where checkout logic should live.
 
-## Why Server-Side Price Calculation Is Required
+## Why The Backend Recalculates Totals
 
 The frontend must not be trusted for:
 
-- product price
+- unit price
 - subtotal
 - shipping fee
 - total amount
 
 Reason:
 
-- frontend values can be manipulated
-- product prices in the database are the source of truth
+- frontend payloads can be tampered with
+- database product data is the source of truth
 
-That is why the service fetches products from PostgreSQL and calculates totals on the server.
+So the backend:
+
+1. loads products by ID
+2. reads the actual price from the database
+3. multiplies by quantity
+4. applies shipping rules itself
+
+That is the correct security model.
 
 ## Product Validation
 
-The service first collects all product IDs from the request.
-
-Then it loads products with:
+The service first gathers product IDs from the request and loads matching active products:
 
 - matching IDs
 - `isActive: true`
 
-If the number of returned products does not match the requested items, the request fails with:
+If the number of returned products does not match what was requested:
 
-- `INVALID_PRODUCTS`
+- it throws `INVALID_PRODUCTS`
 
-This protects the checkout flow from:
+This protects the endpoint from:
 
-- bad product IDs
+- fake product IDs
 - inactive products
 - tampered requests
 
 ## Quantity Validation
 
-Before creating anything, the service checks:
+The service rejects:
 
-- cart is not empty
-- every quantity is at least `1`
+- empty item arrays
+- any item with quantity less than `1`
 
-If quantity is invalid, the request fails with:
+Errors:
 
+- `NO_ITEMS`
 - `INVALID_QUANTITY`
 
-This prevents meaningless or broken order items.
+This is a second layer of defense beyond request validation.
+
+Why keep both:
+
+- route validation protects the request contract
+- service validation protects the business logic boundary
 
 ## Stock Handling
 
-The current implementation updates stock inside the database transaction.
-
-For each normalized item, it uses `updateMany` with:
+Stock is updated inside the same transaction using `updateMany(...)` with:
 
 - matching product ID
-- active product
+- `isActive: true`
 - `stock >= requested quantity`
 
-Why this is good:
+Why this pattern is good:
 
-- it checks stock and decrements in one database operation
-- it reduces the risk of overselling in concurrent requests
+- stock check and stock decrement happen together
+- it reduces the chance of overselling in concurrent requests
 
-If no row is updated, the service throws:
+If no row is updated:
 
-- `INSUFFICIENT_STOCK`
+- the service throws `INSUFFICIENT_STOCK`
 
 ## Transaction Design
 
 The order flow runs inside `prisma.$transaction(...)`.
 
-That matters because checkout needs atomic behavior.
+This is one of the most important parts of the endpoint.
 
-Without a transaction, you could end up in a broken state such as:
+Without a transaction, you could end up with broken states like:
 
 - stock reduced but order not created
 - order created but stock not reduced
 
-The transaction ensures that either:
+With a transaction:
 
-- everything succeeds
+- everything succeeds together
+- or everything rolls back
 
-or:
-
-- everything rolls back
-
-This is one of the most important parts of the implementation.
+That is the minimum correctness bar for checkout.
 
 ## Pricing Rules
 
-The current pricing rules are:
+Current MVP pricing logic:
 
 - `subtotal` = sum of `unitPrice * quantity`
 - `shippingFee` = `0` if subtotal is at least `100`
 - otherwise `shippingFee` = `10`
 - `totalAmount` = `subtotal + shippingFee`
 
-This is a simple MVP shipping rule.
+This is intentionally simple.
 
-Why it is acceptable now:
+Why this is acceptable now:
 
 - easy to test
-- enough to validate checkout logic
-- can be replaced later with real shipping rules
+- easy to explain
+- enough to validate the checkout architecture
+
+It can be replaced later with real shipping rules.
 
 ## Order Creation
 
 After validation and pricing, the service creates:
 
 1. the `Order`
-2. nested `OrderItem` records
+2. nested `OrderItem` rows
 
 Stored order data includes:
 
@@ -293,9 +319,9 @@ Stored order data includes:
 
 Stored order item data includes:
 
-- product ID
-- quantity
-- unit price at the time of purchase
+- `productId`
+- `quantity`
+- `unitPrice`
 
 Important design choice:
 
@@ -304,9 +330,9 @@ Important design choice:
 Why:
 
 - product prices can change later
-- the order must preserve the original purchase price
+- order history must preserve the original purchase price
 
-## Error Handling
+## Error Mapping
 
 The controller currently maps service errors like this:
 
@@ -317,60 +343,97 @@ The controller currently maps service errors like this:
 - missing auth -> `401`
 - unexpected failure -> `500`
 
-This is a practical MVP error strategy.
+Validation failures from `zod` return:
+
+- `VALIDATION_ERROR`
+
+All of these use the shared API error format from [http.ts](c:/Users/user/NestCraft/server/src/utils/http.ts).
 
 ## Example Success Response
 
-On success, the endpoint returns the created order with its items.
+On success, the endpoint returns the created order with items.
 
-That gives the frontend enough data for:
+That is useful immediately for:
 
 - checkout confirmation
-- order review screen
+- order summary UI
 - future order detail pages
+
+Conceptually:
+
+```json
+{
+  "id": 3,
+  "status": "pending",
+  "subtotal": "74.98",
+  "shippingFee": "10.00",
+  "totalAmount": "84.98",
+  "items": [
+    {
+      "productId": 1,
+      "quantity": 1,
+      "unitPrice": "49.99"
+    }
+  ]
+}
+```
+
+## Common Failure Points
+
+Typical reasons for failure:
+
+- missing or invalid bearer token
+- invalid product IDs
+- inactive products
+- quantity less than `1`
+- insufficient stock
+- validation/schema mismatch
+
+One real bug that already happened in this implementation:
+
+- the service briefly tried to write `lineTotal` into `OrderItem`
+- the Prisma schema did not define `lineTotal`
+- that caused generic order creation failure
+
+The correct fix was:
+
+- keep `lineTotal` only as an in-memory calculation
+- store only `productId`, `quantity`, and `unitPrice` in `OrderItem`
+
+That bug is a good reminder that service logic and schema shape must stay aligned.
 
 ## Testing Checklist
 
-The endpoint is working correctly when all of these are true:
+This endpoint is working correctly when:
 
 - valid token is required
-- valid cart creates an order
+- a valid cart creates an order
 - stock decreases after order creation
 - invalid product IDs are rejected
 - invalid quantities are rejected
 - out-of-stock items are rejected
 - totals are calculated on the server
+- the response contains enough order data for confirmation UI
 
-## Common Failure Points
+## Relationship To Frontend
 
-Typical reasons for failure include:
+The frontend checkout page depends directly on this endpoint.
 
-- missing or invalid bearer token
-- cart item product IDs that do not exist
-- inactive products
-- quantity less than `1`
-- insufficient stock
-- schema and service mismatch
+The full flow is:
 
-One example of a real bug already encountered in this implementation:
+1. user adds products to cart
+2. frontend builds checkout payload
+3. frontend sends authenticated `POST /api/orders`
+4. backend creates the order
+5. frontend shows confirmation and clears the local cart
 
-- the service briefly attempted to write `lineTotal` into `OrderItem`
-- the schema did not define `lineTotal`
-- that caused the generic `Failed to create order` response
-
-The fix was to align the service with the schema and store only:
-
-- `productId`
-- `quantity`
-- `unitPrice`
+That is the first real end-to-end purchase slice in the project.
 
 ## What Comes Next
 
-After this backend endpoint, the next frontend step should be:
+After this endpoint, the next related improvements are:
 
-- build `/checkout`
-- collect shipping info
-- send authenticated request to `POST /api/orders`
-- clear local cart after success
-
-That completes the first end-to-end checkout skeleton.
+- admin order management
+- customer-facing order numbers
+- dedicated order detail pages
+- payment integration later
