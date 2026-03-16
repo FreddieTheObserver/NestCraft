@@ -1,11 +1,36 @@
 import type { Response } from 'express';
 import type { AuthenticatedRequest } from '../middleware/authMiddleware.js';
-import { createOrder } from '../services/orderService.js';
+import { createOrder, getOrdersByUserId } from '../services/orderService.js';
 
 type OrderItemInput = {
       productId: number, 
       quantity: number,
 };
+
+export async function getMyOrdersHandler(
+      req: AuthenticatedRequest,
+      res: Response,
+) {
+      try {
+            const userId = req.user?.userId;
+
+            if (!userId) {
+                  return res.status(401).json({
+                        message: "Unauthorized",
+                  });
+            }
+
+            const orders = await getOrdersByUserId(userId);
+
+            return res.status(200).json(orders);
+      } catch (error) {
+            console.error("Fetch orders failed: ", error);
+
+            return res.status(500).json({
+                  message: "Failed to fetch orders",
+            });
+      }
+}
 
 export async function createOrderHandler(
       req: AuthenticatedRequest,

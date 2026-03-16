@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+
 import CartItem from '../components/CartItem';
 import StoreHeader from '../components/StoreHeader';
 import { useCart } from '../context/CartContext';
@@ -44,10 +46,17 @@ function CartPage() {
                                     <span className="text-xl font-semibold">${subtotal.toFixed(2)}</span>
                               </div>
 
+                              <Link
+                                    to="/checkout"
+                                    className="mt-6 flex w-full items-center justify-center rounded-full bg-walnut px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white transition hover:bg-clay"
+                              >
+                                    Proceed to checkout
+                              </Link>
+
                               <button
                                     type="button"
                                     onClick={clearCart}
-                                    className="mt-6 w-full rounded-full border border-stone-300 px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-walnut"
+                                    className="mt-4 w-full rounded-full border border-stone-300 px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-walnut"
                               >
                                     Clear cart
                               </button>

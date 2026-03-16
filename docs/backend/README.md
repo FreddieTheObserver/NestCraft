@@ -7,6 +7,7 @@ Current documents:
 - [auth-backend.md](c:/Users/user/NestCraft/docs/backend/auth-backend.md)
 - [checkout-order-endpoint.md](c:/Users/user/NestCraft/docs/backend/checkout-order-endpoint.md)
 - [database-setup-and-seeding.md](c:/Users/user/NestCraft/docs/backend/database-setup-and-seeding.md)
+- [orders-history-api.md](c:/Users/user/NestCraft/docs/backend/orders-history-api.md)
 - [products-api.md](c:/Users/user/NestCraft/docs/backend/products-api.md)
 - [product-detail-api.md](c:/Users/user/NestCraft/docs/backend/product-detail-api.md)
 

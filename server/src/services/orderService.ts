@@ -16,6 +16,29 @@ type CreateOrderInput = {
       items: OrderItemInput[];
 };
 
+export async function getOrdersByUserId(userId: number) {
+      return prisma.order.findMany({
+            where: { userId },
+            orderBy: {
+                  createdAt: 'desc',
+            },
+            include: {
+                  items: {
+                        include: {
+                              product: {
+                                    select: {
+                                          id: true,
+                                          name: true,
+                                          slug: true,
+                                          imageUrl: true,
+                                    },
+                              },
+                        },    
+                  },
+            },
+      });
+}
+
 export async function createOrder(data: CreateOrderInput) {
       if (!data.items.length) {
             throw new Error("NO_ITEMS");
