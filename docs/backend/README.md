@@ -5,6 +5,7 @@ This folder collects backend-focused implementation notes for `NestCraft`.
 Current documents:
 
 - [auth-backend.md](c:/Users/user/NestCraft/docs/backend/auth-backend.md)
+- [admin-product-endpoints.md](c:/Users/user/NestCraft/docs/backend/admin-product-endpoints.md)
 - [checkout-order-endpoint.md](c:/Users/user/NestCraft/docs/backend/checkout-order-endpoint.md)
 - [database-setup-and-seeding.md](c:/Users/user/NestCraft/docs/backend/database-setup-and-seeding.md)
 - [orders-history-api.md](c:/Users/user/NestCraft/docs/backend/orders-history-api.md)
