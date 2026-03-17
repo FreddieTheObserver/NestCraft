@@ -1,4 +1,5 @@
 import { prisma } from '../lib/prisma.js';
+import type { OrderStatus } from '../generated/prisma/client.js';
 
 type OrderItemInput = {
       productId: number
@@ -170,7 +171,7 @@ export async function getAllOrdersForAdmin() {
       });
 }
 
-export async function updateOrderStatus(id: number, status: string) {
+export async function updateOrderStatus(id: number, status: OrderStatus) {
       const existingOrder = await prisma.order.findUnique({
             where: { id },
       });

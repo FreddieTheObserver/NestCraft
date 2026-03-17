@@ -1,5 +1,6 @@
 import type { Response } from 'express';
 import type { Request } from 'express';
+import type { OrderStatus } from '../generated/prisma/client.js';
 
 import type { AuthenticatedRequest } from '../middleware/authMiddleware.js';
 import { 
@@ -104,7 +105,7 @@ export async function getAdminOrdersHandler(_req: Request, res: Response) {
 }
 
 export async function updateOrderStatusHandler(
-      req: Request<{ id: string }, unknown, { status: "pending" | "confirmed" | "cancelled" }>,
+      req: Request<{ id: string }, unknown, { status: OrderStatus }>,
       res: Response,
 ) {
       try {
