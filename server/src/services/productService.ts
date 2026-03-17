@@ -14,6 +14,17 @@ type CreateProductInput = {
 
 type UpdateProductInput = Partial<CreateProductInput>;
 
+export async function getAllProductsForAdmin() {
+      return prisma.product.findMany({
+            include: {
+                  category: true,
+            },
+            orderBy: {
+                  createdAt: "desc",
+            },
+      });
+}
+
 export async function getAllProducts() {
       return prisma.product.findMany({
             where: {

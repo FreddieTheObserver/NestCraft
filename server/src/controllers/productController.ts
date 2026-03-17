@@ -4,6 +4,7 @@ import {
       createProduct,
       deactivateProduct,
       getAllProducts, 
+      getAllProductsForAdmin,
       getProductBySlug,
       updateProduct
 } from "../services/productService.js";
@@ -12,6 +13,17 @@ import { sendError } from '../utils/http.js';
 type ProductIdParams = {
       id: string;
 };
+
+export async function getAdminProducts(_req: Request, res: Response) {
+      try {
+            const products = await getAllProductsForAdmin();
+
+            return res.status(200).json(products);
+      } catch (error) {
+            console.error("Failed to fetch admin products", error);
+            return sendError(res, 500, "INTERNAL_ERROR", "Failed to fetch admin products");
+      }
+}
 
 export async function getProducts(_req: Request, res: Response) {
       try {
