@@ -139,3 +139,71 @@ export async function createOrder(data: CreateOrderInput) {
             return order;
       });
 }
+
+export async function getAllOrdersForAdmin() {
+      return prisma.order.findMany({
+            orderBy: {
+                  createdAt: "desc",
+            },
+            include: {
+                  user: {
+                        select: {
+                              id: true, 
+                              name: true, 
+                              email: true,
+                              role: true,
+                        },
+                  },
+                  items: {
+                        include: {
+                              product: {
+                                    select: {
+                                          id: true, 
+                                          name: true, 
+                                          slug: true,
+                                          imageUrl: true,
+                                    },
+                              },
+                        },
+                  },
+            },
+      });
+}
+
+export async function updateOrderStatus(id: number, status: string) {
+      const existingOrder = await prisma.order.findUnique({
+            where: { id },
+      });
+
+      if (!existingOrder) {
+            throw new Error("ORDER_NOT_FOUND");
+      }
+
+      return prisma.order.update({
+            where: { id },
+            data: { status },
+            include: {
+                  user: {
+                        select: {
+                              id: true,
+                              name: true,
+                              email: true,
+                              role: true,
+                        },
+                  },
+                  items: {
+                        include: {
+                              product: {
+                                    select: {
+                                          id: true,
+                                          name: true,
+                                          slug: true,
+                                          imageUrl: true,
+                                    },
+                              },
+                        },    
+                  },
+            },
+      });
+}
+

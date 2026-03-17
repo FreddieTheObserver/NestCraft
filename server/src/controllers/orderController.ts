@@ -1,7 +1,14 @@
 import type { Response } from 'express';
+import type { Request } from 'express';
 
 import type { AuthenticatedRequest } from '../middleware/authMiddleware.js';
-import { createOrder, getOrdersByUserId } from '../services/orderService.js';
+import { 
+            createOrder, 
+            getAllOrdersForAdmin,
+            getOrdersByUserId,
+            updateOrderStatus, 
+} from '../services/orderService.js';
+
 import { sendError } from '../utils/http.js';
 
 type OrderItemInput = {
@@ -82,5 +89,38 @@ export async function createOrderHandler(
 
             console.error("Create order failed: ", error);
             return sendError(res, 500, "INTERNAL_ERROR", "Failed to create order");
+      }
+}
+
+export async function getAdminOrdersHandler(_req: Request, res: Response) {
+      try {
+            const orders = await getAllOrdersForAdmin();
+
+            return res.status(200).json(orders);
+      } catch (error) {
+            console.error("Fetch admin orders failed: ", error);
+            return sendError(res, 500, "INTERNAL_ERROR", "Failed to fetch admin orders");
+      }
+}
+
+export async function updateOrderStatusHandler(
+      req: Request<{ id: string }, unknown, { status: "pending" | "confirmed" | "cancelled" }>,
+      res: Response,
+) {
+      try {
+
+            const orderId = Number(req.params.id);
+            const { status } = req.body;
+
+            const order = await updateOrderStatus(orderId, status);
+            
+            return res.status(200).json(order);
+      } catch (error) {
+            if (error instanceof Error && error.message === "ORDER_NOT_FOUND") {
+                  return sendError(res, 404, "ORDER_NOT_FOUND", "Order not found");
+            }
+
+            console.error("UPDATE order status failed: ", error);
+            return sendError(res, 500, "INTERNAL_ERROR", "Failed to update order status");
       }
 }

@@ -14,3 +14,11 @@ export const createOrderSchema = z.object({
       notes: z.string().trim().max(500, "Notes are too long").optional(),
       items: z.array(orderItemSchema).min(1, "Order must contain at least one item"),
 });
+
+export const orderIdParamsSchema = z.object({
+      id: z.coerce.number().int().positive("Order id must be a positive integer"),
+});
+
+export const updateOrderStatusSchema = z.object({
+      status: z.enum(["pending", "confirmed", "cancelled"]),
+});
