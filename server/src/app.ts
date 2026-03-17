@@ -4,6 +4,8 @@ import express from "express";
 import { env } from "./config/env.js";
 import healthRouter from "./routes/health.js";
 
+import adminProductRouter from "./routes/adminProduct.js";
+import categoryRouter from "./routes/category.js";
 import productRouter from "./routes/product.js";
 import authRouter from "./routes/auth.js";
 
@@ -21,6 +23,8 @@ app.use(express.json());
 
 app.use("/api/health", healthRouter);
 
+app.use("/api/admin/products", adminProductRouter);
+app.use("/api/categories", categoryRouter);
 app.use("/api/products", productRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/orders", orderRouter);

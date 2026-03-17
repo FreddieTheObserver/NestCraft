@@ -50,6 +50,14 @@ function StoreHeader() {
                                     Orders
                               </Link>
                         ) : null}
+                        {isAuthenticated && user?.role === 'admin' ? (
+                              <Link
+                                    to="/admin/products"
+                                    className="rounded-full border border-stone-200 bg-white px-4 py-2 text-sm font-semibold text-walnut transition hover:border-clay hover:text-clay"
+                              >
+                                    Admin
+                              </Link>
+                        ) : null}
 
                         {isAuthenticated ? (
                               <button

@@ -7,7 +7,11 @@ import CheckoutPage from '../pages/CheckoutPage';
 import OrdersPage from '../pages/OrdersPage';
 import LoginPage from '../pages/LoginPage';
 import RegisterPage from '../pages/RegisterPage';
+import AdminProductsPage from '../pages/AdminProductsPage';
+import AdminCreateProductPage from '../pages/AdminCreateProductPage';
+import AdminEditProductPage from '../pages/AdminEditProductPage';
 import ProtectedRoute from '../components/ProtectedRoute';
+import AdminRoute from '../components/AdminRoute';
 
 export const router = createBrowserRouter([
       {
@@ -52,6 +56,30 @@ export const router = createBrowserRouter([
                   <ProtectedRoute>
                         <OrdersPage />
                   </ProtectedRoute>
+            ),
+      },
+      {
+            path: '/admin/products',
+            element: (
+                  <AdminRoute>
+                        <AdminProductsPage />
+                  </AdminRoute>
+            ),
+      },
+      {
+            path: '/admin/products/new',
+            element: (
+                  <AdminRoute>
+                        <AdminCreateProductPage />
+                  </AdminRoute>
+            ),
+      },
+      {
+            path: '/admin/products/:id/edit',
+            element: (
+                  <AdminRoute>
+                        <AdminEditProductPage />
+                  </AdminRoute>
             ),
       },
 ]);
