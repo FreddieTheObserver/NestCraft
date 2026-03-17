@@ -24,7 +24,7 @@ async function main() {
       const decor = await prisma.category.create({
             data: {
                   name: "Decor",
-                  slug: "decor",
+                  slug: "decor",    
                   imageUrl: "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85",
             },
       });
