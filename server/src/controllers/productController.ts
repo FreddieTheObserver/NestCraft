@@ -30,8 +30,7 @@ export async function getProducts(
       res: Response,
 ) {
       try {
-            const query = (res.locals.validatedQuery ?? req.query) as ProductListQuery;
-            const products = await getAllProducts(query);
+            const products = await getAllProducts(req.query);
 
             return res.status(200).json(products);
       } catch (error) {
