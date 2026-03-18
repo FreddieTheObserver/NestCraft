@@ -10,6 +10,7 @@ import RegisterPage from '../pages/RegisterPage';
 import AdminProductsPage from '../pages/AdminProductsPage';
 import AdminCreateProductPage from '../pages/AdminCreateProductPage';
 import AdminEditProductPage from '../pages/AdminEditProductPage';
+import AdminOrdersPage from '../pages/AdminOrdersPage';
 import ProtectedRoute from '../components/ProtectedRoute';
 import AdminRoute from '../components/AdminRoute';
 
@@ -79,6 +80,14 @@ export const router = createBrowserRouter([
             element: (
                   <AdminRoute>
                         <AdminEditProductPage />
+                  </AdminRoute>
+            ),
+      },
+      {
+            path: '/admin/orders',
+            element: (
+                  <AdminRoute>
+                        <AdminOrdersPage />
                   </AdminRoute>
             ),
       },
