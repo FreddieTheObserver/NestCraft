@@ -15,9 +15,11 @@ export type CreateOrderInput = {
       items: CheckoutItemInput[]
 }
 
+export type OrderStatus = 'pending' | 'confirmed' | 'cancelled'
+
 export type OrderResponse = {
       id: number
-      status: string
+      status: OrderStatus
       subtotal: string
       shippingFee: string
       totalAmount: string
