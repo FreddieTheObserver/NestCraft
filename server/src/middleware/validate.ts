@@ -6,6 +6,7 @@ import { sendError } from '../utils/http.js';
 type SchemaSet = {
       body?: ZodTypeAny;
       params?: ZodTypeAny;
+      query?: ZodTypeAny;
 };
 
 export function validate(schemas: SchemaSet) {
@@ -17,6 +18,10 @@ export function validate(schemas: SchemaSet) {
 
                   if (schemas.params) {
                         req.params = schemas.params.parse(req.params) as Request["params"];
+                  }
+
+                  if (schemas.query) {
+                        res.locals.validatedQuery = schemas.query.parse(req.query);
                   }
 
                   return next();

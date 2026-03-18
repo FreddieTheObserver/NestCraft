@@ -1,4 +1,5 @@
 import type { Request, Response } from "express";
+import type { ProductListQuery } from "../validation/productSchemas.js";
 
 import { 
       createProduct,
@@ -24,9 +25,14 @@ export async function getAdminProducts(_req: Request, res: Response) {
       }
 }
 
-export async function getProducts(_req: Request, res: Response) {
+export async function getProducts(
+      req: Request<unknown, unknown, unknown, ProductListQuery>,
+      res: Response,
+) {
       try {
-            const products = await getAllProducts();
+            const query = (res.locals.validatedQuery ?? req.query) as ProductListQuery;
+            const products = await getAllProducts(query);
+
             return res.status(200).json(products);
       } catch (error) {
             console.error("Failed to fetch products: ", error);

@@ -13,13 +13,14 @@ import { validate } from '../middleware/validate.js';
 import { 
       createProductSchema,
       productIdParamsSchema,
+      productListQuerySchema,
       productSlugParamsSchema,
       updateProductSchema,
 } from '../validation/productSchemas.js';
 
 const productRouter = Router();
 
-productRouter.get('/', getProducts);
+productRouter.get('/', validate({ query: productListQuerySchema }), getProducts);
 productRouter.get('/:slug', validate({ params: productSlugParamsSchema }), getProduct);
 
 productRouter.post(

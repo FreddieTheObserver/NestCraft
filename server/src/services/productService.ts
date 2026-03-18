@@ -1,4 +1,6 @@
 import { prisma } from '../lib/prisma.js';
+import { Prisma } from '../generated/prisma/client.js';
+import type { ProductListQuery } from '../validation/productSchemas.js';
 
 type CreateProductInput = {
       name: string;
@@ -25,17 +27,47 @@ export async function getAllProductsForAdmin() {
       });
 }
 
-export async function getAllProducts() {
+export async function getAllProducts(query: ProductListQuery = { sort: "newest" }) {
+      const where: Prisma.ProductWhereInput = {
+            isActive: true,
+      };
+
+      if (query.search) {
+            where.OR = [
+                  {
+                        name: {
+                              contains: query.search,
+                              mode: "insensitive",
+                        },
+                  },
+                  {
+                        description: {
+                              contains: query.search,
+                              mode: "insensitive",
+                        },
+                  },
+            ];
+      }
+
+      if (query.category) {
+            where.category = {
+                  slug: query.category,
+            };
+      }
+
+      const orderBy: Prisma.ProductOrderByWithRelationInput =
+            query.sort === "price-asc"
+                  ? { price: "asc" }
+                  : query.sort === "price-desc"
+                  ? { price: "desc" }
+                  : { createdAt: "desc" };
+      
       return prisma.product.findMany({
-            where: {
-                  isActive: true,
-            },
-            include: {
-                  category: true,
-            },
-            orderBy: {
-                  createdAt: "desc",
-            },
+            where,
+                  include: {
+                        category: true,
+                  },
+                  orderBy,
       });
 }
 

@@ -12,6 +12,33 @@ export const productIdParamsSchema = z.object({
       id: z.coerce.number().int().positive("Product id must be a positive integer"),
 });
 
+const optionalSearchSchema = z.preprocess(
+      (value) => (typeof value === "string" && value.trim() === "" ? undefined : value),
+      z
+            .string()
+            .trim()
+            .min(1, "Search must not be empty")
+            .max(100, "Search is too long")
+            .optional(),
+);
+
+const optionalCategorySchema = z.preprocess(
+      (value) => (typeof value === "string" && value.trim() === "" ? undefined : value),
+      z
+            .string()
+            .trim()
+            .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Invalid category slug")
+            .optional(),
+);
+
+export const productListQuerySchema = z.object({
+      search: optionalSearchSchema,
+      category: optionalCategorySchema,
+      sort: z.enum(["newest", "price-asc", "price-desc"]).optional().default("newest"),
+});
+
+export type ProductListQuery = z.infer<typeof productListQuerySchema>;
+
 export const createProductSchema = z.object({
       name: z.string().trim().min(2, "Name must be at least 2 characters"),
       slug: z
