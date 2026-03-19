@@ -6,6 +6,7 @@ import type { AuthenticatedRequest } from '../middleware/authMiddleware.js';
 import { 
             createOrder, 
             getAllOrdersForAdmin,
+            getOrderByOrderNumberForUser,
             getOrdersByUserId,
             updateOrderStatus, 
 } from '../services/orderService.js';
@@ -123,5 +124,31 @@ export async function updateOrderStatusHandler(
 
             console.error("UPDATE order status failed: ", error);
             return sendError(res, 500, "INTERNAL_ERROR", "Failed to update order status");
+      }
+}
+
+export async function getMyOrderNumberHandler(
+      req: AuthenticatedRequest & { params: { orderNumber: string }},
+      res: Response,
+) {
+      try {
+            const userId = req.user?.userId;
+
+            if (!userId) {
+                  return sendError(res, 401, "UNAUTHORIZED", "Authentication is required");
+            }
+
+            const { orderNumber } = req.params;
+
+            const order = await getOrderByOrderNumberForUser(orderNumber, userId);
+
+            return res.status(200).json(order);
+      } catch (error) {
+            if (error instanceof Error && error.message === "ORDER_NOT_FOUND") {
+                  return sendError(res, 404, "ORDER_NOT_FOUND", "Order not found");
+            }
+
+            console.error("Fetch order by order number failed: ", error);
+            return sendError(res, 500, "INTERNAL_ERROR", "Failed to fetch order");
       }
 }
