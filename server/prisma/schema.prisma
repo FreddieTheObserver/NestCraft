@@ -60,6 +60,7 @@ model Product {
 model Order {
   id              Int               @id @default(autoincrement())
   userId          Int
+  orderNumber     String            @unique
   user            User              @relation(fields: [userId], references: [id])
   status          OrderStatus       @default(pending)
   subtotal        Decimal           @db.Decimal(10, 2)

@@ -22,3 +22,9 @@ export const orderIdParamsSchema = z.object({
 export const updateOrderStatusSchema = z.object({
       status: z.enum(["pending", "confirmed", "cancelled"]),
 });
+
+export const orderNumberParamsSchema = z.object({
+      orderNumber: z
+            .string()
+            .regex(/^NC-[0-9]{6,}$/, "Invalid order number"),
+});

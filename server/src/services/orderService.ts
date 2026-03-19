@@ -1,3 +1,5 @@
+import { randomUUID } from 'node:crypto';
+
 import { prisma } from '../lib/prisma.js';
 import type { OrderStatus } from '../generated/prisma/client.js';
 
@@ -16,6 +18,10 @@ type CreateOrderInput = {
       notes?: string 
       items: OrderItemInput[];
 };
+
+function formatOrderNumber(id: number) {
+      return `NC-${String(id).padStart(6, "0")}`;
+}
 
 export async function getOrdersByUserId(userId: number) {
       return prisma.order.findMany({
@@ -107,10 +113,11 @@ export async function createOrder(data: CreateOrderInput) {
             const shippingFee = subtotal >= 100 ? 0 : 10;
             const totalAmount = subtotal + shippingFee;
 
-            const order = await tx.order.create({
+            const createdOrder = await tx.order.create({
                   data: {
                         userId: data.userId,
-                        status: "pending",
+                        orderNumber: `TEMP-${randomUUID()}`,
+                        status: 'pending',
                         subtotal,
                         shippingFee,
                         totalAmount,
@@ -128,6 +135,13 @@ export async function createOrder(data: CreateOrderInput) {
                               })),
                         },
                   },
+            });
+
+            const orderNumber = formatOrderNumber(createdOrder.id);
+
+            const order = await tx.order.update({
+                  where: { id: createdOrder.id },
+                  data: { orderNumber },
                   include: {
                         items: {
                               include: {
