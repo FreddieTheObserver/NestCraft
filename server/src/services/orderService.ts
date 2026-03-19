@@ -222,3 +222,31 @@ export async function updateOrderStatus(id: number, status: OrderStatus) {
       });
 }
 
+export async function getOrderByOrderNumberForUser(
+      orderNumber: string,
+      userId: number,
+) {
+      return prisma.order.findFirst({
+            where: {
+                  orderNumber,
+                  userId,
+            }, 
+            include : {
+                  items: {
+                        include: {
+                              product: {
+                                    select: {
+                                          id: true,
+                                          name: true,
+                                          slug: true,
+                                          imageUrl: true,
+                                    },
+                              },
+                        },
+                  },
+            },
+      });
+}
+
+
+
