@@ -387,9 +387,8 @@ all had to work together cleanly.
 
 After this browse improvement slice, the next likely improvements are:
 
-- order detail page
-- customer-facing order numbers
 - visual refinement of the storefront
 - deeper browse polish if needed
+- broader account-area polish after storefront browsing
 
 The core browse contract is now in place.

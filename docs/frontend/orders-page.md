@@ -27,6 +27,7 @@ This page is the first real account-facing screen built on top of:
 ## Files Involved
 
 - [OrdersPage.tsx](c:/Users/user/NestCraft/client/src/pages/OrdersPage.tsx)
+- [OrderDetailPage.tsx](c:/Users/user/NestCraft/client/src/pages/OrderDetailPage.tsx)
 - [orders.ts](c:/Users/user/NestCraft/client/src/services/orders.ts)
 - [index.tsx](c:/Users/user/NestCraft/client/src/routes/index.tsx)
 - [StoreHeader.tsx](c:/Users/user/NestCraft/client/src/components/StoreHeader.tsx)
@@ -119,6 +120,8 @@ The page renders:
 - shared `StoreHeader`
 - a summary section showing total orders and total spent
 - a list of order cards
+- customer-facing order numbers
+- detail links for each order
 - nested line items for each order
 - delivery details for each order
 - subtotal, shipping, and total blocks
@@ -157,30 +160,27 @@ That allows the UI to link purchased products back to:
 
 This improves usability without requiring another API request.
 
-## Why The Page Can Show `Order #3` For A User's First Purchase
+## Why The Page Uses Customer-Facing Order Numbers
 
-This is expected and it comes from the backend data model, not a frontend bug.
+The page now displays `order.orderNumber`, not the raw database `id`.
 
-The page displays:
+That is the correct customer-facing behavior because the backend now stores a separate public identifier such as:
+
+- `NC-000001`
+- `NC-000057`
+
+This gives the frontend a clean split between:
+
+- internal database `id`
+- public `orderNumber`
+
+The page also uses that same value in detail links:
 
 ```text
-Order #{order.id}
+/orders/:orderNumber
 ```
 
-The backend filters the order list by user, but `order.id` is still the global autoincrement ID from the database.
-
-So if several orders were created by other accounts first, a user's first personal order may still be:
-
-- `Order #3`
-- `Order #7`
-- `Order #12`
-
-Important distinction:
-
-- the order list is user-specific
-- the displayed numeric ID is global
-
-The page is correctly showing what the backend returns.
+That keeps checkout confirmation, order history, and order detail consistent.
 
 ## Error Behavior
 
@@ -208,8 +208,9 @@ The full user flow is:
 
 1. add items to cart
 2. complete checkout
-3. backend saves the order
-4. `/orders` loads and displays the saved order history
+3. backend saves the order and returns `orderNumber`
+4. checkout confirmation links to the detail page
+5. `/orders` loads the saved order history with the same public order numbers
 
 ## What To Test
 
@@ -223,6 +224,7 @@ This page is working correctly when:
 - error state renders correctly
 - order items display correct quantities and prices
 - product links point back to product detail pages
+- each order links to `/orders/:orderNumber`
 
 ## What Success Looks Like
 
@@ -236,7 +238,6 @@ This page is complete enough for the current stage when:
 
 The next useful improvements after this page are:
 
-- dedicated order-detail page
-- customer-facing order numbers instead of raw IDs
 - customer account dashboard
-- admin order management
+- order-status timeline or richer delivery progress
+- account-area polish and grouping for larger order histories

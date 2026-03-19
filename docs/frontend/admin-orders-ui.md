@@ -394,11 +394,9 @@ That is the core operational loop of a basic ecommerce system.
 
 ## What Comes After This
 
-After the admin orders UI, the next logical work is:
+The customer-side follow-up from this operational slice has now landed:
 
-- browse/search/filter improvements
 - order detail page
 - customer-facing order numbers
-- broader UI polish
 
-The admin operations foundation is now in place, so the next work can move back toward customer-facing experience and refinement.
+The remaining likely work after this is broader UI polish, deployment, and refinement of the customer account area.

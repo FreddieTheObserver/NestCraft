@@ -310,6 +310,7 @@ After validation and pricing, the service creates:
 Stored order data includes:
 
 - user relationship
+- customer-facing `orderNumber`
 - status
 - subtotal
 - shipping fee
@@ -357,13 +358,14 @@ That is useful immediately for:
 
 - checkout confirmation
 - order summary UI
-- future order detail pages
+- dedicated order detail pages
 
 Conceptually:
 
 ```json
 {
   "id": 3,
+  "orderNumber": "NC-000003",
   "status": "pending",
   "subtotal": "74.98",
   "shippingFee": "10.00",
@@ -425,15 +427,21 @@ The full flow is:
 2. frontend builds checkout payload
 3. frontend sends authenticated `POST /api/orders`
 4. backend creates the order
-5. frontend shows confirmation and clears the local cart
+5. frontend shows confirmation with the customer-facing order number
+6. frontend can link directly into the order detail page and clear the local cart
 
 That is the first real end-to-end purchase slice in the project.
 
 ## What Comes Next
 
-After this endpoint, the next related improvements are:
+This endpoint now feeds:
 
-- admin order management
-- customer-facing order numbers
+- checkout confirmation
+- purchase history
 - dedicated order detail pages
+
+The remaining broader work after this slice is:
+
+- deployment and polish
+- richer customer account experience
 - payment integration later

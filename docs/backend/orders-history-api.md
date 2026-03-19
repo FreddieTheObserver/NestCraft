@@ -10,7 +10,7 @@ GET /api/orders/me
 
 ## Goal
 
-Return only the orders that belong to the logged-in user, with enough nested data to render a complete purchase-history page without extra requests.
+Return only the orders that belong to the logged-in user, with enough nested data to render a complete purchase-history page and link into dedicated order detail pages without extra requests.
 
 This endpoint is the backend source for:
 
@@ -113,6 +113,7 @@ Conceptually, the response looks like this:
 [
   {
     "id": 3,
+    "orderNumber": "NC-000003",
     "status": "pending",
     "subtotal": "74.98",
     "shippingFee": "10.00",
@@ -154,53 +155,20 @@ So even if multiple accounts have created orders, this endpoint returns only the
 
 That is the important privacy rule for purchase history.
 
-## Why The UI Can Show `Order #3` For A User's First Order
+## Why `orderNumber` Is Included
 
-This is the part that often causes confusion.
+The response now includes both:
 
-The orders list is user-filtered, but the order ID is still global.
+- internal `id`
+- public `orderNumber`
 
-In [schema.prisma](c:/Users/user/NestCraft/server/prisma/schema.prisma), the `Order` model uses:
+The frontend should display `orderNumber`.
 
-```prisma
-id Int @id @default(autoincrement())
-```
+This matters because:
 
-That means PostgreSQL assigns one increasing sequence for the entire `Order` table, not one sequence per user.
-
-Example:
-
-- user A places order `#1`
-- user B places order `#2`
-- current user places their first order
-
-The current user will correctly see only their own order in `/orders`, but that order may still be:
-
-- `Order #3`
-
-This is normal.
-
-Important distinction:
-
-- the visible order list is filtered by user
-- the displayed order ID is global across the table
-
-## If A Friendlier Customer-Facing Order Number Is Needed Later
-
-If you do not want to expose raw database IDs in the UI, add a separate field later, for example:
-
-```prisma
-orderNumber String @unique
-```
-
-Then display something like:
-
-- `NC-20260316-0003`
-
-That gives you a clean split between:
-
-- internal database ID
-- customer-facing order number
+- the database `id` is still a global internal sequence
+- the customer-facing UI should use the dedicated public identifier
+- purchase history can now link directly to `/orders/:orderNumber`
 
 ## Error Behavior
 
@@ -225,6 +193,7 @@ The flow is:
 1. checkout creates the order
 2. order rows are saved in PostgreSQL
 3. `GET /api/orders/me` loads those rows back for the logged-in user
+4. the frontend can link from the history list into `GET /api/orders/:orderNumber`
 
 ## What Success Looks Like
 
@@ -234,4 +203,5 @@ This endpoint is working correctly when:
 - authenticated users only receive their own orders
 - orders are sorted newest first
 - each order includes item data and product summary data
-- the frontend can render purchase history without extra API calls
+- each order includes `orderNumber`
+- the frontend can render purchase history and link to order detail without extra API calls

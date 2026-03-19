@@ -11,6 +11,7 @@ Current documents:
 - [auth-frontend.md](c:/Users/user/NestCraft/docs/frontend/auth-frontend.md)
 - [local-cart.md](c:/Users/user/NestCraft/docs/frontend/local-cart.md)
 - [orders-page.md](c:/Users/user/NestCraft/docs/frontend/orders-page.md)
+- [order-detail-page.md](c:/Users/user/NestCraft/docs/frontend/order-detail-page.md)
 - [products-page.md](c:/Users/user/NestCraft/docs/frontend/products-page.md)
 - [product-detail-page.md](c:/Users/user/NestCraft/docs/frontend/product-detail-page.md)
 

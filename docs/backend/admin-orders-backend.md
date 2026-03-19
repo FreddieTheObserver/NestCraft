@@ -479,13 +479,10 @@ Without these endpoints, the frontend admin side would have no clean way to insp
 
 ## What Comes Next
 
-After the backend admin order endpoints and the status enum migration are in place, the next logical step is:
+The frontend admin order-management UI is now in place on top of these endpoints.
 
-- frontend admin order management UI
+The next likely backend follow-ups, if needed later, are:
 
-That should likely include:
-
-- `/admin/orders`
-- all-orders table or cards
-- status update controls
-- clear presentation for `pending`, `confirmed`, and `cancelled`
+- admin-side order detail reads
+- admin filtering by status or date
+- richer operational workflow states beyond `pending`, `confirmed`, and `cancelled`

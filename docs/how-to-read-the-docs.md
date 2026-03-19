@@ -104,6 +104,7 @@ If you are working on checkout or orders:
 
 - [checkout-order-endpoint.md](c:/Users/user/NestCraft/docs/backend/checkout-order-endpoint.md)
 - [orders-history-api.md](c:/Users/user/NestCraft/docs/backend/orders-history-api.md)
+- [order-detail-api.md](c:/Users/user/NestCraft/docs/backend/order-detail-api.md)
 - [admin-orders-backend.md](c:/Users/user/NestCraft/docs/backend/admin-orders-backend.md)
 - [order-status-enum.md](c:/Users/user/NestCraft/docs/backend/order-status-enum.md)
 
@@ -148,6 +149,7 @@ If you are working on auth:
 If you are working on customer orders:
 
 - [orders-page.md](c:/Users/user/NestCraft/docs/frontend/orders-page.md)
+- [order-detail-page.md](c:/Users/user/NestCraft/docs/frontend/order-detail-page.md)
 
 If you are working on admin features:
 
@@ -182,9 +184,11 @@ Examples:
 
 1. [checkout-order-endpoint.md](c:/Users/user/NestCraft/docs/backend/checkout-order-endpoint.md)
 2. [orders-history-api.md](c:/Users/user/NestCraft/docs/backend/orders-history-api.md)
-3. [orders-page.md](c:/Users/user/NestCraft/docs/frontend/orders-page.md)
-4. [admin-orders-backend.md](c:/Users/user/NestCraft/docs/backend/admin-orders-backend.md)
-5. [admin-orders-ui.md](c:/Users/user/NestCraft/docs/frontend/admin-orders-ui.md)
+3. [order-detail-api.md](c:/Users/user/NestCraft/docs/backend/order-detail-api.md)
+4. [orders-page.md](c:/Users/user/NestCraft/docs/frontend/orders-page.md)
+5. [order-detail-page.md](c:/Users/user/NestCraft/docs/frontend/order-detail-page.md)
+6. [admin-orders-backend.md](c:/Users/user/NestCraft/docs/backend/admin-orders-backend.md)
+7. [admin-orders-ui.md](c:/Users/user/NestCraft/docs/frontend/admin-orders-ui.md)
 
 This is the best way to understand how one feature moves through:
 

@@ -142,6 +142,10 @@ export async function getMyOrderNumberHandler(
 
             const order = await getOrderByOrderNumberForUser(orderNumber, userId);
 
+            if (!order) {
+                  return sendError(res, 404, "ORDER_NOT_FOUND", "Order not found");
+            }
+
             return res.status(200).json(order);
       } catch (error) {
             if (error instanceof Error && error.message === "ORDER_NOT_FOUND") {

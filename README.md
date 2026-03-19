@@ -9,7 +9,8 @@ The project currently includes:
 - local cart with `localStorage` persistence
 - register/login/logout
 - protected checkout flow
-- order creation and order history
+- order creation, order history, and order detail
+- customer-facing order numbers
 - backend validation and role-aware authorization
 - admin-only backend product write endpoints
 - frontend admin product management
@@ -51,6 +52,9 @@ Implemented:
 - basic auth
 - `POST /api/orders`
 - `GET /api/orders/me`
+- `GET /api/orders/:orderNumber`
+- order detail page
+- customer-facing order numbers
 - `GET /api/admin/orders`
 - `PATCH /api/admin/orders/:id/status`
 - backend request validation
@@ -64,7 +68,7 @@ Implemented:
 
 Next likely step:
 
-- order detail page
+- deployment and polish
 
 For a more detailed project status, see [roadmap.md](c:/Users/user/NestCraft/docs/roadmap.md).
 
@@ -175,6 +179,7 @@ Authenticated:
 
 - `POST /api/orders`
 - `GET /api/orders/me`
+- `GET /api/orders/:orderNumber`
 
 Admin-only:
 
@@ -204,6 +209,7 @@ Backend notes:
 - [auth-backend.md](c:/Users/user/NestCraft/docs/backend/auth-backend.md)
 - [checkout-order-endpoint.md](c:/Users/user/NestCraft/docs/backend/checkout-order-endpoint.md)
 - [orders-history-api.md](c:/Users/user/NestCraft/docs/backend/orders-history-api.md)
+- [order-detail-api.md](c:/Users/user/NestCraft/docs/backend/order-detail-api.md)
 - [request-validation-and-authorization.md](c:/Users/user/NestCraft/docs/backend/request-validation-and-authorization.md)
 - [admin-product-endpoints.md](c:/Users/user/NestCraft/docs/backend/admin-product-endpoints.md)
 
@@ -219,12 +225,14 @@ Frontend notes:
 - [local-cart.md](c:/Users/user/NestCraft/docs/frontend/local-cart.md)
 - [auth-frontend.md](c:/Users/user/NestCraft/docs/frontend/auth-frontend.md)
 - [orders-page.md](c:/Users/user/NestCraft/docs/frontend/orders-page.md)
+- [order-detail-page.md](c:/Users/user/NestCraft/docs/frontend/order-detail-page.md)
 
 ## Development Notes
 
 - The cart is currently frontend-local and persisted in `localStorage`.
 - Authentication uses JWTs and role-aware middleware on the backend.
 - Order totals are calculated on the server, not trusted from the frontend.
+- Customer-facing order numbers are stored separately from internal order IDs.
 - Order status is enforced by a Prisma/PostgreSQL enum and still validated at the request layer.
 - Product soft delete is implemented with `isActive`.
 - Reactivation currently happens through the generic update endpoint by sending `{ "isActive": true }`.
