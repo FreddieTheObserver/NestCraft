@@ -5,6 +5,7 @@ This guide is for other people reading `NestCraft` for the first time.
 The project documentation is detailed, but it is also split by purpose:
 
 - top-level project status
+- deployment and runtime notes
 - backend implementation notes
 - frontend implementation notes
 
@@ -59,6 +60,8 @@ This is the best file for understanding:
 
 If you only read one file after the root README, read the roadmap.
 
+If your immediate question is about runtime setup or deployment, read [deployment.md](c:/Users/user/NestCraft/docs/deployment.md) right after the roadmap.
+
 ## Step 3: Decide Which Side You Care About
 
 Once you understand the overall state, choose your reading path:
@@ -66,6 +69,7 @@ Once you understand the overall state, choose your reading path:
 - backend path
 - frontend path
 - full vertical-slice path
+- deployment/runtime path
 
 Do not try to read every file at once.
 
@@ -122,12 +126,14 @@ That file gives you the frontend documentation map.
 Then read in this order:
 
 1. [api-integration.md](c:/Users/user/NestCraft/docs/frontend/api-integration.md)
-2. [api-error-handling.md](c:/Users/user/NestCraft/docs/frontend/api-error-handling.md)
-3. the page-specific doc you need
+2. [ui-foundations.md](c:/Users/user/NestCraft/docs/frontend/ui-foundations.md)
+3. [api-error-handling.md](c:/Users/user/NestCraft/docs/frontend/api-error-handling.md)
+4. the page-specific doc you need
 
 Why this order:
 
 - API integration explains how the client talks to the backend
+- UI foundations explains the shared page shell and state-panel conventions
 - API error handling explains how failures are surfaced
 - page docs explain feature-specific UI behavior
 
@@ -155,6 +161,21 @@ If you are working on admin features:
 
 - [admin-products-ui.md](c:/Users/user/NestCraft/docs/frontend/admin-products-ui.md)
 - [admin-orders-ui.md](c:/Users/user/NestCraft/docs/frontend/admin-orders-ui.md)
+
+## Step 4D: If You Are Working On Deployment Or Runtime Config
+
+Start with [deployment.md](c:/Users/user/NestCraft/docs/deployment.md).
+
+Then read:
+
+1. [README.md](c:/Users/user/NestCraft/README.md)
+2. [api-integration.md](c:/Users/user/NestCraft/docs/frontend/api-integration.md)
+
+Why this order:
+
+- the deployment doc explains the full runtime contract
+- the root README explains the main setup flow
+- the frontend API integration doc explains how the client resolves API URLs
 
 ## Step 4C: If You Want To Understand One Feature End To End
 
@@ -227,6 +248,13 @@ Read:
 
 - [roadmap.md](c:/Users/user/NestCraft/docs/roadmap.md)
 
+If your question is "How do I configure or deploy this app?"
+
+Read:
+
+- [deployment.md](c:/Users/user/NestCraft/docs/deployment.md)
+- [api-integration.md](c:/Users/user/NestCraft/docs/frontend/api-integration.md)
+
 ## Step 6: Read Shared Docs Before Editing Shared Behavior
 
 Before changing anything cross-cutting, read the shared docs first.
@@ -245,6 +273,11 @@ Before changing order status behavior:
 
 - read [admin-orders-backend.md](c:/Users/user/NestCraft/docs/backend/admin-orders-backend.md)
 - read [order-status-enum.md](c:/Users/user/NestCraft/docs/backend/order-status-enum.md)
+
+Before changing runtime configuration or deploy behavior:
+
+- read [deployment.md](c:/Users/user/NestCraft/docs/deployment.md)
+- read [api-integration.md](c:/Users/user/NestCraft/docs/frontend/api-integration.md)
 
 This avoids making a local change that breaks a broader project convention.
 
@@ -317,14 +350,22 @@ Use this if you are brand new:
 3. frontend doc for the feature
 4. related shared docs
 
+### Deployment and runtime path
+
+1. [README.md](c:/Users/user/NestCraft/README.md)
+2. [roadmap.md](c:/Users/user/NestCraft/docs/roadmap.md)
+3. [deployment.md](c:/Users/user/NestCraft/docs/deployment.md)
+4. [api-integration.md](c:/Users/user/NestCraft/docs/frontend/api-integration.md)
+
 ## Short Version
 
 If you want the shortest useful rule:
 
 1. read [README.md](c:/Users/user/NestCraft/README.md)
 2. read [roadmap.md](c:/Users/user/NestCraft/docs/roadmap.md)
-3. choose backend or frontend
-4. read that folder's README
-5. read only the docs for the feature you are touching
+3. read [deployment.md](c:/Users/user/NestCraft/docs/deployment.md) if your work touches runtime setup
+4. choose backend or frontend
+5. read that folder's README
+6. read only the docs for the feature you are touching
 
 That is the correct way to read this project's documentation without getting lost.

@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 
+import PageShell from '../components/PageShell'
 import ProductCard from '../components/ProductCard'
-import StoreHeader from '../components/StoreHeader'
+import StatusPanel from '../components/StatusPanel'
 import {
   getProductCategories,
   getProducts,
@@ -159,48 +160,42 @@ function ProductsPage() {
 
   if (!hasLoadedOnce && isFetching) {
     return (
-      <main className="min-h-screen bg-sand px-6 py-12 text-walnut sm:px-10 lg:px-16">
-        <section className="mx-auto max-w-7xl">
-          <div className="max-w-3xl space-y-4">
-            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-clay">
-              NestCraft catalog
-            </p>
-            <h1 className="text-4xl font-semibold leading-tight sm:text-5xl">
-              Loading products...
-            </h1>
-          </div>
-        </section>
-      </main>
+      <PageShell maxWidth="7xl">
+        <StatusPanel
+          eyebrow="NestCraft catalog"
+          title="Loading products..."
+          message="Fetching the current catalog and browse filters."
+          className="max-w-3xl"
+        />
+      </PageShell>
     )
   }
 
   if (error) {
     return (
-      <main className="min-h-screen bg-sand px-6 py-12 text-walnut sm:px-10 lg:px-16">
-        <section className="mx-auto max-w-4xl rounded-[2rem] border border-red-200 bg-white p-8 shadow-sm">
-          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-red-500">
-            Products unavailable
-          </p>
-          <h1 className="mt-4 text-3xl font-semibold">We could not load the catalog.</h1>
-          <p className="mt-3 text-stone-600">{error}</p>
-        </section>
-      </main>
+      <PageShell maxWidth="4xl">
+        <StatusPanel
+          eyebrow="Products unavailable"
+          title="We could not load the catalog."
+          message={error}
+          tone="error"
+        />
+      </PageShell>
     )
   }
 
   if (products.length === 0) {
     return (
-      <main className="min-h-screen bg-sand px-6 py-12 text-walnut sm:px-10 lg:px-16">
-        <section className="mx-auto max-w-4xl rounded-[2rem] border border-stone-200 bg-white p-8 shadow-sm">
-          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-clay">
-            Products
-          </p>
-          <h1 className="mt-4 text-3xl font-semibold">No products found.</h1>
-          <p className="mt-3 text-stone-600">
-            {hasActiveFilters
+      <PageShell maxWidth="4xl">
+        <StatusPanel
+          eyebrow="Products"
+          title="No products found."
+          message={
+            hasActiveFilters
               ? 'No products match your current search, category, or sort combination.'
-              : 'The API responded successfully, but there are no active products to display yet.'}
-          </p>
+              : 'The API responded successfully, but there are no active products to display yet.'
+          }
+        >
           {hasActiveFilters ? (
             <button
               type="button"
@@ -210,15 +205,13 @@ function ProductsPage() {
               Clear filters
             </button>
           ) : null}
-        </section>
-      </main>
+        </StatusPanel>
+      </PageShell>
     )
   }
 
   return (
-    <main className="min-h-screen bg-sand px-6 py-12 text-walnut sm:px-10 lg:px-16">
-      <section className="mx-auto max-w-7xl space-y-8">
-        <StoreHeader />
+    <PageShell maxWidth="7xl">
         <div className="grid gap-8 rounded-[2rem] bg-gradient-to-r from-white/70 via-white/40 to-transparent p-8 shadow-[0_20px_50px_rgba(32,26,22,0.06)] lg:grid-cols-[1.3fr_0.7fr] lg:items-end">
           <div className="space-y-4">
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-clay">
@@ -327,8 +320,7 @@ function ProductsPage() {
             <ProductCard key={product.id} product={product} />
           ))}
         </div>
-      </section>
-    </main>
+    </PageShell>
   )
 }
 

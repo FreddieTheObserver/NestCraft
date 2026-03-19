@@ -23,3 +23,7 @@ Use these notes as the backend reference for:
 - migrations and seeders
 - API route structure
 - controller, service, and route responsibilities
+
+Cross-cutting deployment and runtime notes live in:
+
+- [deployment.md](c:/Users/user/NestCraft/docs/deployment.md)

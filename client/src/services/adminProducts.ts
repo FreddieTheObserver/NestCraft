@@ -1,4 +1,4 @@
-import { readApiError } from "../utils/api";
+import { apiFetch, readApiError } from "../utils/api";
 import type { Product } from './products';
 
 export type AdminProduct = Product;
@@ -25,7 +25,7 @@ export type ProductFormInput = {
 }
 
 export async function getAdminProducts(token: string): Promise<AdminProduct[]> {
-      const response = await fetch('/api/admin/products', {
+      const response = await apiFetch('/api/admin/products', {
             headers: {
                   Authorization: `Bearer ${token}`,
             },
@@ -39,7 +39,7 @@ export async function getAdminProducts(token: string): Promise<AdminProduct[]> {
 }
 
 export async function getCategories(): Promise<CategoryOption[]> {
-      const response = await fetch('/api/categories');
+      const response = await apiFetch('/api/categories');
 
       if (!response.ok) {
             throw new Error(await readApiError(response, "Failed to fetch categories"));
@@ -52,7 +52,7 @@ export async function createAdminProduct(
       data: ProductFormInput,
       token: string,
 ): Promise<AdminProduct> {
-      const response = await fetch ('/api/products', {
+      const response = await apiFetch('/api/products', {
             method: 'POST',
             headers: {
                   'Content-Type': 'application/json',
@@ -73,7 +73,7 @@ export async function updateAdminProduct(
       data: Partial<ProductFormInput>,
       token: string,
 ): Promise<AdminProduct> {
-      const response = await fetch(`/api/products/${id}`, {
+      const response = await apiFetch(`/api/products/${id}`, {
             method: 'PATCH',
             headers: {
                   'Content-Type': 'application/json',
@@ -93,7 +93,7 @@ export async function deactivateAdminProduct(
       id: number,
       token: string,
 ): Promise<AdminProduct> {
-      const response = await fetch(`/api/products/${id}/deactivate`, {
+      const response = await apiFetch(`/api/products/${id}/deactivate`, {
             method: 'PATCH',
             headers: {
                   Authorization: `Bearer ${token}`,

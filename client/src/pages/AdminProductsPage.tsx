@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
-import StoreHeader from '../components/StoreHeader'
+import PageShell from '../components/PageShell'
+import StatusPanel from '../components/StatusPanel'
 import { useAuth } from '../context/AuthContext'
 import {
       deactivateAdminProduct,
@@ -90,25 +91,31 @@ function AdminProductsPage() {
 
       if (loading) {
             return (
-                  <main className="min-h-screen bg-sand px-6 py-12 text-walnut sm:px-10 lg:px-16">
-                        Loading admin products...
-                  </main>
+                  <PageShell maxWidth="7xl">
+                        <StatusPanel
+                              eyebrow="Admin catalog"
+                              title="Loading admin products..."
+                              message="Fetching the full catalog with admin visibility."
+                        />
+                  </PageShell>
             )
       }
 
       if (error) {
             return (
-                  <main className="min-h-screen bg-sand px-6 py-12 text-walnut sm:px-10 lg:px-16">
-                        {error}
-                  </main>
+                  <PageShell maxWidth="7xl">
+                        <StatusPanel
+                              eyebrow="Admin catalog unavailable"
+                              title="We could not load the admin product list."
+                              message={error}
+                              tone="error"
+                        />
+                  </PageShell>
             )
       }
 
       return (
-            <main className="min-h-screen bg-sand px-6 py-12 text-walnut sm:px-10 lg:px-16">
-                  <section className="mx-auto max-w-7xl space-y-8">
-                        <StoreHeader />
-
+            <PageShell maxWidth="7xl">
                         <div className="flex flex-col gap-4 rounded-[2rem] bg-white/80 p-8 shadow-sm sm:flex-row sm:items-center sm:justify-between">
                               <div>
                                     <p className="text-sm font-semibold uppercase tracking-[0.24em] text-clay">
@@ -126,12 +133,21 @@ function AdminProductsPage() {
                         </div>
 
                         {actionError ? (
-                              <div className="rounded-2xl border border-red-200 bg-white p-4 text-sm text-red-500">
-                                    {actionError}
-                              </div>
+                              <StatusPanel
+                                    eyebrow="Product action failed"
+                                    title="We could not update that product."
+                                    message={actionError}
+                                    tone="error"
+                                    className="p-6"
+                              />
                         ) : null}
 
-                        <div className="overflow-hidden rounded-[2rem] border border-stone-200 bg-white shadow-sm">
+                        <div className="rounded-[2rem] border border-stone-200 bg-white shadow-sm">
+                              <div className="border-b border-stone-200 px-6 py-4 text-sm text-stone-500 xl:hidden">
+                                    Scroll horizontally to review product inventory and actions on smaller screens.
+                              </div>
+                              <div className="overflow-x-auto">
+                              <div className="min-w-[960px]">
                               <div className="grid grid-cols-[1.6fr_0.9fr_0.8fr_0.8fr_1fr] gap-4 border-b border-stone-200 px-6 py-4 text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
                                     <span>Product</span>
                                     <span>Category</span>
@@ -191,9 +207,10 @@ function AdminProductsPage() {
                                           </div>
                                     ))}
                               </div>
+                              </div>
+                              </div>
                         </div>
-                  </section>
-            </main>
+            </PageShell>
       )
 }
 

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 
-import StoreHeader from '../components/StoreHeader'
+import PageShell from '../components/PageShell'
+import StatusPanel from '../components/StatusPanel'
 import { useAuth } from '../context/AuthContext'
 import {
   getAdminOrders,
@@ -71,9 +72,7 @@ function AdminOrdersPage() {
       const updatedOrder = await updateAdminOrderStatus(id, status, token)
 
       setOrders((currentOrders) =>
-        currentOrders.map((order) =>
-          order.id === id ? updatedOrder : order,
-        ),
+        currentOrders.map((order) => (order.id === id ? updatedOrder : order)),
       )
     } catch (updateError) {
       setError(
@@ -88,34 +87,26 @@ function AdminOrdersPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-sand px-6 py-12 text-walnut sm:px-10 lg:px-16">
-        <section className="mx-auto max-w-7xl space-y-8">
-          <StoreHeader />
-          <div className="rounded-[2rem] bg-white p-10 shadow-sm">
-            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-clay">
-              Admin orders
-            </p>
-            <h1 className="mt-4 text-4xl font-semibold">Loading incoming orders...</h1>
-          </div>
-        </section>
-      </main>
+      <PageShell maxWidth="7xl">
+        <StatusPanel
+          eyebrow="Admin orders"
+          title="Loading incoming orders..."
+          message="Fetching the full operational order queue."
+        />
+      </PageShell>
     )
   }
 
   if (error && orders.length === 0) {
     return (
-      <main className="min-h-screen bg-sand px-6 py-12 text-walnut sm:px-10 lg:px-16">
-        <section className="mx-auto max-w-7xl space-y-8">
-          <StoreHeader />
-          <div className="rounded-[2rem] border border-red-200 bg-white p-10 shadow-sm">
-            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-red-500">
-              Admin orders unavailable
-            </p>
-            <h1 className="mt-4 text-4xl font-semibold">We could not load the order queue.</h1>
-            <p className="mt-4 text-stone-600">{error}</p>
-          </div>
-        </section>
-      </main>
+      <PageShell maxWidth="7xl">
+        <StatusPanel
+          eyebrow="Admin orders unavailable"
+          title="We could not load the order queue."
+          message={error}
+          tone="error"
+        />
+      </PageShell>
     )
   }
 
@@ -126,208 +117,209 @@ function AdminOrdersPage() {
   )
 
   return (
-    <main className="min-h-screen bg-sand px-6 py-12 text-walnut sm:px-10 lg:px-16">
-      <section className="mx-auto max-w-7xl space-y-8">
-        <StoreHeader />
+    <PageShell maxWidth="7xl">
+      <div className="grid gap-8 rounded-[2rem] bg-gradient-to-r from-white/75 via-white/50 to-transparent p-8 shadow-[0_20px_50px_rgba(32,26,22,0.06)] lg:grid-cols-[1.3fr_0.7fr] lg:items-end">
+        <div className="space-y-4">
+          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-clay">
+            Admin orders
+          </p>
+          <h1 className="text-4xl font-semibold leading-tight sm:text-5xl">
+            Review incoming orders and move them through the store workflow.
+          </h1>
+          <p className="max-w-2xl text-base leading-7 text-stone-600">
+            This page shows every saved order in the system, including customer
+            details, item summaries, totals, and the current order status.
+          </p>
+        </div>
 
-        <div className="grid gap-8 rounded-[2rem] bg-gradient-to-r from-white/75 via-white/50 to-transparent p-8 shadow-[0_20px_50px_rgba(32,26,22,0.06)] lg:grid-cols-[1.3fr_0.7fr] lg:items-end">
-          <div className="space-y-4">
-            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-clay">
-              Admin orders
-            </p>
-            <h1 className="text-4xl font-semibold leading-tight sm:text-5xl">
-              Review incoming orders and move them through the store workflow.
-            </h1>
-            <p className="max-w-2xl text-base leading-7 text-stone-600">
-              This page shows every saved order in the system, including customer
-              details, item summaries, totals, and the current order status.
-            </p>
-          </div>
-
-          <div className="rounded-[1.5rem] border border-stone-200/80 bg-white/80 p-6">
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">
-              Operations snapshot
-            </p>
-            <div className="mt-5 grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-3xl font-semibold text-walnut">{orders.length}</p>
-                <p className="mt-1 text-sm text-stone-500">Orders in system</p>
-              </div>
-              <div>
-                <p className="text-3xl font-semibold text-walnut">{pendingCount}</p>
-                <p className="mt-1 text-sm text-stone-500">Pending review</p>
-              </div>
-              <div className="col-span-2 rounded-[1.25rem] bg-stone-50 p-4">
-                <p className="text-sm font-semibold uppercase tracking-[0.16em] text-stone-500">
-                  Gross order value
-                </p>
-                <p className="mt-2 text-3xl font-semibold text-walnut">
-                  ${totalRevenue.toFixed(2)}
-                </p>
-              </div>
+        <div className="rounded-[1.5rem] border border-stone-200/80 bg-white/80 p-6">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">
+            Operations snapshot
+          </p>
+          <div className="mt-5 grid grid-cols-2 gap-4">
+            <div>
+              <p className="text-3xl font-semibold text-walnut">{orders.length}</p>
+              <p className="mt-1 text-sm text-stone-500">Orders in system</p>
+            </div>
+            <div>
+              <p className="text-3xl font-semibold text-walnut">{pendingCount}</p>
+              <p className="mt-1 text-sm text-stone-500">Pending review</p>
+            </div>
+            <div className="col-span-2 rounded-[1.25rem] bg-stone-50 p-4">
+              <p className="text-sm font-semibold uppercase tracking-[0.16em] text-stone-500">
+                Gross order value
+              </p>
+              <p className="mt-2 text-3xl font-semibold text-walnut">
+                ${totalRevenue.toFixed(2)}
+              </p>
             </div>
           </div>
         </div>
+      </div>
 
-        {error ? (
-          <div className="rounded-2xl border border-red-200 bg-white p-4 text-sm text-red-500">
-            {error}
-          </div>
-        ) : null}
+      {error ? (
+        <StatusPanel
+          eyebrow="Order update failed"
+          title="We could not update that order."
+          message={error}
+          tone="error"
+          className="p-6"
+        />
+      ) : null}
 
-        {orders.length === 0 ? (
-          <div className="rounded-[2rem] bg-white p-10 shadow-sm">
-            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-clay">
-              Admin orders
-            </p>
-            <h2 className="mt-4 text-3xl font-semibold">No orders have been placed yet.</h2>
-            <p className="mt-4 max-w-2xl text-stone-600">
-              When customers complete checkout, their orders will appear here for
-              review and status management.
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-6">
-            {orders.map((order) => (
-              <article
-                key={order.id}
-                className="rounded-[2rem] bg-white p-8 shadow-[0_18px_40px_rgba(32,26,22,0.05)]"
-              >
-                <div className="flex flex-col gap-5 border-b border-stone-200 pb-5 xl:flex-row xl:items-start xl:justify-between">
-                  <div>
-                    <p className="text-sm font-semibold uppercase tracking-[0.2em] text-clay">
-                      Order #{order.id}
-                    </p>
-                    <h2 className="mt-3 text-2xl font-semibold text-walnut">
-                      {order.user.name} placed {order.items.length} item(s)
-                    </h2>
-                    <p className="mt-2 text-sm text-stone-500">
-                      {order.user.email} · {new Date(order.createdAt).toLocaleDateString()}
-                    </p>
-                  </div>
-
-                  <div className="grid gap-4 sm:grid-cols-[auto_auto] xl:min-w-[360px]">
-                    <div className={`rounded-[1.5rem] border px-5 py-4 ${statusTone[order.status]}`}>
-                      <p className="text-xs font-semibold uppercase tracking-[0.18em]">
-                        Status
-                      </p>
-                      <p className="mt-2 text-lg font-semibold">{statusCopy[order.status]}</p>
-                      <p className="mt-2 text-sm text-stone-500">Total ${order.totalAmount}</p>
-                    </div>
-
-                    <div className="rounded-[1.5rem] bg-stone-50 px-5 py-4">
-                      <label
-                        htmlFor={`status-${order.id}`}
-                        className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500"
-                      >
-                        Update status
-                      </label>
-                      <select
-                        id={`status-${order.id}`}
-                        value={order.status}
-                        disabled={updatingId === order.id}
-                        onChange={(event) =>
-                          void handleStatusChange(
-                            order.id,
-                            event.target.value as OrderStatus,
-                          )
-                        }
-                        className="mt-2 w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-sm font-semibold text-walnut"
-                      >
-                        <option value="pending">Pending</option>
-                        <option value="confirmed">Confirmed</option>
-                        <option value="cancelled">Cancelled</option>
-                      </select>
-                    </div>
-                  </div>
+      {orders.length === 0 ? (
+        <StatusPanel
+          eyebrow="Admin orders"
+          title="No orders have been placed yet."
+          message="When customers complete checkout, their orders will appear here for review and status management."
+        />
+      ) : (
+        <div className="space-y-6">
+          {orders.map((order) => (
+            <article
+              key={order.id}
+              className="rounded-[2rem] bg-white p-8 shadow-[0_18px_40px_rgba(32,26,22,0.05)]"
+            >
+              <div className="flex flex-col gap-5 border-b border-stone-200 pb-5 xl:flex-row xl:items-start xl:justify-between">
+                <div>
+                  <p className="text-sm font-semibold uppercase tracking-[0.2em] text-clay">
+                    {order.orderNumber}
+                  </p>
+                  <h2 className="mt-3 text-2xl font-semibold text-walnut">
+                    {order.user.name} placed {order.items.length} item(s)
+                  </h2>
+                  <p className="mt-2 text-sm text-stone-500">
+                    {order.user.email} -{' '}
+                    {new Date(order.createdAt).toLocaleDateString()}
+                  </p>
+                  <p className="mt-1 text-xs font-medium uppercase tracking-[0.16em] text-stone-400">
+                    Internal ID #{order.id}
+                  </p>
                 </div>
 
-                <div className="mt-6 grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
-                  <div className="space-y-4">
-                    {order.items.map((item) => (
-                      <div
-                        key={item.id}
-                        className="flex items-center gap-4 rounded-[1.5rem] border border-stone-200/80 p-4"
-                      >
-                        <div className="h-20 w-20 overflow-hidden rounded-xl bg-stone-100">
-                          {item.product.imageUrl ? (
-                            <img
-                              src={item.product.imageUrl}
-                              alt={item.product.name}
-                              className="h-full w-full object-cover"
-                            />
-                          ) : (
-                            <div className="flex h-full items-center justify-center text-xs text-stone-500">
-                              No image
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="min-w-0 flex-1">
-                          <p className="text-lg font-semibold text-walnut">
-                            {item.product.name}
-                          </p>
-                          <p className="mt-1 text-sm text-stone-500">
-                            Qty {item.quantity} - ${item.unitPrice} each
-                          </p>
-                        </div>
-
-                        <p className="text-sm font-semibold text-walnut">
-                          ${(Number(item.unitPrice) * item.quantity).toFixed(2)}
-                        </p>
-                      </div>
-                    ))}
+                <div className="grid gap-4 sm:grid-cols-[auto_auto] xl:min-w-[360px]">
+                  <div
+                    className={`rounded-[1.5rem] border px-5 py-4 ${statusTone[order.status]}`}
+                  >
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em]">
+                      Status
+                    </p>
+                    <p className="mt-2 text-lg font-semibold">{statusCopy[order.status]}</p>
+                    <p className="mt-2 text-sm text-stone-500">Total ${order.totalAmount}</p>
                   </div>
 
-                  <aside className="rounded-[1.5rem] bg-stone-50 p-5">
-                    <p className="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">
-                      Delivery details
-                    </p>
-                    <div className="mt-4 space-y-3 text-sm text-stone-600">
-                      <p>
-                        <strong className="text-walnut">Name:</strong> {order.shippingName}
-                      </p>
-                      <p>
-                        <strong className="text-walnut">Email:</strong> {order.shippingEmail}
-                      </p>
-                      <p>
-                        <strong className="text-walnut">Phone:</strong> {order.shippingPhone}
-                      </p>
-                      <p>
-                        <strong className="text-walnut">City:</strong> {order.shippingCity}
-                      </p>
-                      <p>
-                        <strong className="text-walnut">Address:</strong> {order.shippingAddress}
-                      </p>
-                      {order.notes ? (
-                        <p>
-                          <strong className="text-walnut">Notes:</strong> {order.notes}
-                        </p>
-                      ) : null}
-                    </div>
-
-                    <div className="mt-5 space-y-2 border-t border-stone-200 pt-4 text-sm">
-                      <div className="flex items-center justify-between text-stone-600">
-                        <span>Subtotal</span>
-                        <span>${order.subtotal}</span>
-                      </div>
-                      <div className="flex items-center justify-between text-stone-600">
-                        <span>Shipping</span>
-                        <span>${order.shippingFee}</span>
-                      </div>
-                      <div className="flex items-center justify-between font-semibold text-walnut">
-                        <span>Total</span>
-                        <span>${order.totalAmount}</span>
-                      </div>
-                    </div>
-                  </aside>
+                  <div className="rounded-[1.5rem] bg-stone-50 px-5 py-4">
+                    <label
+                      htmlFor={`status-${order.id}`}
+                      className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500"
+                    >
+                      Update status
+                    </label>
+                    <select
+                      id={`status-${order.id}`}
+                      value={order.status}
+                      disabled={updatingId === order.id}
+                      onChange={(event) =>
+                        void handleStatusChange(
+                          order.id,
+                          event.target.value as OrderStatus,
+                        )
+                      }
+                      className="mt-2 w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-sm font-semibold text-walnut"
+                    >
+                      <option value="pending">Pending</option>
+                      <option value="confirmed">Confirmed</option>
+                      <option value="cancelled">Cancelled</option>
+                    </select>
+                  </div>
                 </div>
-              </article>
-            ))}
-          </div>
-        )}
-      </section>
-    </main>
+              </div>
+
+              <div className="mt-6 grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
+                <div className="space-y-4">
+                  {order.items.map((item) => (
+                    <div
+                      key={item.id}
+                      className="flex items-center gap-4 rounded-[1.5rem] border border-stone-200/80 p-4"
+                    >
+                      <div className="h-20 w-20 overflow-hidden rounded-xl bg-stone-100">
+                        {item.product.imageUrl ? (
+                          <img
+                            src={item.product.imageUrl}
+                            alt={item.product.name}
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-full items-center justify-center text-xs text-stone-500">
+                            No image
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="min-w-0 flex-1">
+                        <p className="text-lg font-semibold text-walnut">
+                          {item.product.name}
+                        </p>
+                        <p className="mt-1 text-sm text-stone-500">
+                          Qty {item.quantity} - ${item.unitPrice} each
+                        </p>
+                      </div>
+
+                      <p className="text-sm font-semibold text-walnut">
+                        ${(Number(item.unitPrice) * item.quantity).toFixed(2)}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+
+                <aside className="rounded-[1.5rem] bg-stone-50 p-5">
+                  <p className="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">
+                    Delivery details
+                  </p>
+                  <div className="mt-4 space-y-3 text-sm text-stone-600">
+                    <p>
+                      <strong className="text-walnut">Name:</strong> {order.shippingName}
+                    </p>
+                    <p>
+                      <strong className="text-walnut">Email:</strong> {order.shippingEmail}
+                    </p>
+                    <p>
+                      <strong className="text-walnut">Phone:</strong> {order.shippingPhone}
+                    </p>
+                    <p>
+                      <strong className="text-walnut">City:</strong> {order.shippingCity}
+                    </p>
+                    <p>
+                      <strong className="text-walnut">Address:</strong> {order.shippingAddress}
+                    </p>
+                    {order.notes ? (
+                      <p>
+                        <strong className="text-walnut">Notes:</strong> {order.notes}
+                      </p>
+                    ) : null}
+                  </div>
+
+                  <div className="mt-5 space-y-2 border-t border-stone-200 pt-4 text-sm">
+                    <div className="flex items-center justify-between text-stone-600">
+                      <span>Subtotal</span>
+                      <span>${order.subtotal}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-stone-600">
+                      <span>Shipping</span>
+                      <span>${order.shippingFee}</span>
+                    </div>
+                    <div className="flex items-center justify-between font-semibold text-walnut">
+                      <span>Total</span>
+                      <span>${order.totalAmount}</span>
+                    </div>
+                  </div>
+                </aside>
+              </div>
+            </article>
+          ))}
+        </div>
+      )}
+    </PageShell>
   )
 }
 

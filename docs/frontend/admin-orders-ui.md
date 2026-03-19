@@ -62,6 +62,8 @@ Page:
 Shared app wiring:
 
 - [index.tsx](c:/Users/user/NestCraft/client/src/routes/index.tsx)
+- [PageShell.tsx](c:/Users/user/NestCraft/client/src/components/PageShell.tsx)
+- [StatusPanel.tsx](c:/Users/user/NestCraft/client/src/components/StatusPanel.tsx)
 - [StoreHeader.tsx](c:/Users/user/NestCraft/client/src/components/StoreHeader.tsx)
 - [AuthContext.tsx](c:/Users/user/NestCraft/client/src/context/AuthContext.tsx)
 
@@ -188,6 +190,8 @@ This reuse keeps the order model consistent without forcing the client into a bi
 - showing order items and totals
 - updating status in place
 
+It now does that inside the shared `PageShell` layout and uses the shared `StatusPanel` component for state handling.
+
 This page is the operational hub for order management in the current version of the app.
 
 ## Why The Page Reuses The Customer Orders Visual Pattern
@@ -257,6 +261,18 @@ These summary values are derived client-side from the fetched list:
 - `sum(Number(order.totalAmount))`
 
 That is acceptable because the page already has the full order collection in memory.
+
+## Order Labels
+
+The admin page now shows the customer-facing `orderNumber` as the primary visible label for each order.
+
+It still keeps the internal numeric `id` visible as secondary admin context.
+
+That is the correct split because:
+
+- customers and admins now see the same public order reference
+- backend admin mutations can still rely on the internal numeric ID
+- the UI no longer teaches admins to think in raw customer-facing database IDs first
 
 ## Status Presentation
 

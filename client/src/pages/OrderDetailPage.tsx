@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
-import StoreHeader from '../components/StoreHeader';
+import PageShell from '../components/PageShell';
+import StatusPanel from '../components/StatusPanel';
 import { useAuth } from '../context/AuthContext';
 import { getMyOrderByOrderNumber, type OrderResponse } from '../services/orders';
 
@@ -58,48 +59,38 @@ function OrderDetailPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-sand px-6 py-12 text-walnut sm:px-10 lg:px-16">
-        <section className="mx-auto max-w-7xl space-y-8">
-          <StoreHeader />
-          <div className="rounded-[2rem] bg-white p-10 shadow-sm">
-            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-clay">
-              Order detail
-            </p>
-            <h1 className="mt-4 text-4xl font-semibold">Loading order...</h1>
-          </div>
-        </section>
-      </main>
+      <PageShell maxWidth="7xl">
+        <StatusPanel
+          eyebrow="Order detail"
+          title="Loading order..."
+          message="Fetching the latest saved order details for this account."
+        />
+      </PageShell>
     );
   }
 
   if (error || !order) {
     return (
-      <main className="min-h-screen bg-sand px-6 py-12 text-walnut sm:px-10 lg:px-16">
-        <section className="mx-auto max-w-7xl space-y-8">
-          <StoreHeader />
-          <div className="rounded-[2rem] border border-red-200 bg-white p-10 shadow-sm">
-            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-red-500">
-              Order unavailable
-            </p>
-            <h1 className="mt-4 text-4xl font-semibold">We could not load this order.</h1>
-            <p className="mt-4 text-stone-600">{error || 'Order not found.'}</p>
+      <PageShell maxWidth="7xl">
+          <StatusPanel
+            eyebrow="Order unavailable"
+            title="We could not load this order."
+            message={error || 'Order not found.'}
+            tone="error"
+          >
             <Link
               to="/orders"
               className="mt-6 inline-flex rounded-full bg-walnut px-6 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white transition hover:bg-clay"
             >
               Back to orders
             </Link>
-          </div>
-        </section>
-      </main>
+          </StatusPanel>
+      </PageShell>
     );
   }
 
   return (
-    <main className="min-h-screen bg-sand px-6 py-12 text-walnut sm:px-10 lg:px-16">
-      <section className="mx-auto max-w-7xl space-y-8">
-        <StoreHeader />
-
+    <PageShell maxWidth="7xl">
         <div className="grid gap-6 rounded-[2rem] bg-gradient-to-r from-white/70 via-white/40 to-transparent p-8 shadow-[0_20px_50px_rgba(32,26,22,0.06)] lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
           <div className="space-y-4">
             <Link
@@ -203,8 +194,7 @@ function OrderDetailPage() {
             </aside>
           </div>
         </article>
-      </section>
-    </main>
+    </PageShell>
   );
 }
 

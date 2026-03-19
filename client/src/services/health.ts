@@ -1,3 +1,5 @@
+import { apiFetch } from '../utils/api'
+
 export type HealthResponse = {
   status: string
   message: string
@@ -5,7 +7,7 @@ export type HealthResponse = {
 }
 
 export async function getHealth(): Promise<HealthResponse> {
-  const response = await fetch('/api/health')
+  const response = await apiFetch('/api/health')
 
   if (!response.ok) {
     throw new Error('Failed to fetch API health')

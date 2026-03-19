@@ -1,4 +1,4 @@
-import { readApiError } from '../utils/api'
+import { apiFetch, readApiError } from '../utils/api'
 import type { OrderResponse, OrderStatus } from './orders'
 
 export type AdminOrder = OrderResponse & {
@@ -13,7 +13,7 @@ export type AdminOrder = OrderResponse & {
 }
 
 export async function getAdminOrders(token: string): Promise<AdminOrder[]> {
-  const response = await fetch('/api/admin/orders', {
+  const response = await apiFetch('/api/admin/orders', {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -31,7 +31,7 @@ export async function updateAdminOrderStatus(
   status: OrderStatus,
   token: string,
 ): Promise<AdminOrder> {
-  const response = await fetch(`/api/admin/orders/${id}/status`, {
+  const response = await apiFetch(`/api/admin/orders/${id}/status`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',

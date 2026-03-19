@@ -18,6 +18,9 @@ The project currently includes:
 - frontend admin order management
 - browse/search/filter improvements
 - enum-backed order status model
+- shared page shell and status panels
+- runtime-configured API base URLs and backend CORS allowlists
+- env examples and deployment notes
 
 ## Stack
 
@@ -65,10 +68,14 @@ Implemented:
 - frontend admin orders UI
 - products page search/category/sort controls
 - Prisma enum-backed order status
+- shared page shell and status panels
+- runtime-configured client API access
+- validated backend env parsing and CORS allowlist setup
+- deployment notes and `.env.example` files
 
 Next likely step:
 
-- deployment and polish
+- choose a real deployment target and continue visual refinement
 
 For a more detailed project status, see [roadmap.md](c:/Users/user/NestCraft/docs/roadmap.md).
 
@@ -101,7 +108,14 @@ npm install
 
 ### 2. Configure environment variables
 
-Create or update [server/.env](c:/Users/user/NestCraft/server/.env) with at least:
+Copy the example files first:
+
+```text
+client/.env.example -> client/.env
+server/.env.example -> server/.env
+```
+
+Update [server/.env](c:/Users/user/NestCraft/server/.env) with at least:
 
 ```env
 DATABASE_URL=your_postgres_connection_string
@@ -111,6 +125,20 @@ CLIENT_ORIGIN=http://localhost:5173
 ```
 
 The backend expects a working PostgreSQL database before migrations or seed commands are run.
+
+The frontend can use [client/.env](c:/Users/user/NestCraft/client/.env) like this:
+
+```env
+VITE_API_BASE_URL=
+VITE_API_PROXY_TARGET=http://localhost:5000
+```
+
+For ordinary local development:
+
+- leave `VITE_API_BASE_URL` blank
+- keep `VITE_API_PROXY_TARGET` pointed at the backend dev server
+
+Set `VITE_API_BASE_URL` only when you want the frontend to call a deployed backend origin directly.
 
 ### 3. Run Prisma migration and seed
 
@@ -196,6 +224,7 @@ Top-level project status:
 
 - [how-to-read-the-docs.md](c:/Users/user/NestCraft/docs/how-to-read-the-docs.md)
 - [roadmap.md](c:/Users/user/NestCraft/docs/roadmap.md)
+- [deployment.md](c:/Users/user/NestCraft/docs/deployment.md)
 
 Backend notes:
 
@@ -220,6 +249,7 @@ Frontend notes:
 - [admin-products-ui.md](c:/Users/user/NestCraft/docs/frontend/admin-products-ui.md)
 - [api-integration.md](c:/Users/user/NestCraft/docs/frontend/api-integration.md)
 - [api-error-handling.md](c:/Users/user/NestCraft/docs/frontend/api-error-handling.md)
+- [ui-foundations.md](c:/Users/user/NestCraft/docs/frontend/ui-foundations.md)
 - [products-page.md](c:/Users/user/NestCraft/docs/frontend/products-page.md)
 - [product-detail-page.md](c:/Users/user/NestCraft/docs/frontend/product-detail-page.md)
 - [local-cart.md](c:/Users/user/NestCraft/docs/frontend/local-cart.md)
@@ -237,6 +267,7 @@ Frontend notes:
 - Product soft delete is implemented with `isActive`.
 - Reactivation currently happens through the generic update endpoint by sending `{ "isActive": true }`.
 - Public catalog browsing now uses query params for `search`, `category`, and `sort`.
+- Client API requests now flow through shared `buildApiUrl()` and `apiFetch()` helpers.
 
 ## Current Workflow Recommendation
 

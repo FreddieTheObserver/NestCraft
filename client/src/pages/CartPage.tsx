@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom';
 
 import CartItem from '../components/CartItem';
-import StoreHeader from '../components/StoreHeader';
+import PageShell from '../components/PageShell';
+import StatusPanel from '../components/StatusPanel';
 import { useCart } from '../context/CartContext';
 
 function CartPage() {
@@ -9,24 +10,19 @@ function CartPage() {
 
       if (items.length === 0) {
             return (
-                  <main className="min-h-screen bg-sand px-6 py-12 text-walnut sm:px-10 lg:px-16">
-                        <section className="mx-auto max-w-6xl space-y-8">
-                              <StoreHeader />
-                              <div className="max-w-4xl rounded-[2rem] bg-white p-10 shadow-sm">
-                                    <h1 className="text-4xl font-semibold">Your cart is empty</h1>
-                                    <p className="mt-4 text-stone-600">
-                                          Add a few products to start building your NestCraft order.
-                                    </p>
-                              </div>
-                        </section>
-                  </main>
+                  <PageShell maxWidth="6xl">
+                        <StatusPanel
+                              eyebrow="Your cart"
+                              title="Your cart is empty"
+                              message="Add a few products to start building your NestCraft order."
+                              className="max-w-4xl"
+                        />
+                  </PageShell>
             )
       }
 
       return (
-            <main className="min-h-screen bg-sand px-6 py-12 text-walnut sm:px-10 lg:px-16">
-                  <section className="mx-auto max-w-6xl space-y-8">
-                        <StoreHeader />
+            <PageShell maxWidth="6xl">
                         <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
                         <div className="space-y-4">
                               <h1 className="text-4xl font-semibold">Your cart</h1>
@@ -62,8 +58,7 @@ function CartPage() {
                               </button>
                         </aside>
                         </div>
-                  </section>
-            </main>
+            </PageShell>
       )
 }
 

@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
 import AdminProductForm from '../components/AdminProductForm'
-import StoreHeader from '../components/StoreHeader'
+import PageShell from '../components/PageShell'
+import StatusPanel from '../components/StatusPanel'
 import { useAuth } from '../context/AuthContext'
 import {
       getAdminProducts,
@@ -99,17 +100,26 @@ function AdminEditProductPage() {
 
       if (loading) {
             return (
-                  <main className="min-h-screen bg-sand px-6 py-12 text-walnut sm:px-10 lg:px-16">
-                        Loading product...
-                  </main>
+                  <PageShell maxWidth="4xl">
+                        <StatusPanel
+                              eyebrow="Admin catalog"
+                              title="Loading product..."
+                              message="Fetching the product and category data for this form."
+                        />
+                  </PageShell>
             )
       }
 
       if (!product) {
             return (
-                  <main className="min-h-screen bg-sand px-6 py-12 text-walnut sm:px-10 lg:px-16">
-                        {error || 'Product not found'}
-                  </main>
+                  <PageShell maxWidth="4xl">
+                        <StatusPanel
+                              eyebrow="Admin catalog unavailable"
+                              title="We could not load that product."
+                              message={error || 'Product not found'}
+                              tone="error"
+                        />
+                  </PageShell>
             )
       }
 
@@ -126,26 +136,23 @@ function AdminEditProductPage() {
       }
 
       return (
-            <main className="min-h-screen bg-sand px-6 py-12 text-walnut sm:px-10 lg:px-16">
-                  <section className="mx-auto max-w-4xl space-y-8">
-                        <StoreHeader />
-                        <div>
-                              <p className="text-sm font-semibold uppercase tracking-[0.24em] text-clay">
-                                    Admin catalog
-                              </p>
-                              <h1 className="mt-3 text-4xl font-semibold">Edit product</h1>
-                        </div>
+            <PageShell maxWidth="4xl">
+                  <div>
+                        <p className="text-sm font-semibold uppercase tracking-[0.24em] text-clay">
+                              Admin catalog
+                        </p>
+                        <h1 className="mt-3 text-4xl font-semibold">Edit product</h1>
+                  </div>
 
-                        <AdminProductForm
-                              initialValues={initialValues}
-                              categories={categories}
-                              submitLabel="Save changes"
-                              loading={submitting}
-                              error={error}
-                              onSubmit={handleSubmit}
-                        />
-                  </section>
-            </main>
+                  <AdminProductForm
+                        initialValues={initialValues}
+                        categories={categories}
+                        submitLabel="Save changes"
+                        loading={submitting}
+                        error={error}
+                        onSubmit={handleSubmit}
+                  />
+            </PageShell>
       )
 }
 

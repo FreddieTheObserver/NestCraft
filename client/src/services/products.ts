@@ -1,4 +1,4 @@
-import { readApiError } from '../utils/api'
+import { apiFetch, readApiError } from '../utils/api'
 
 export type Product = {
       id: number,
@@ -57,7 +57,7 @@ export async function getProducts(filters: ProductListFilters = {}): Promise<Pro
       }
 
       const query = params.toString()
-      const response = await fetch(query ? `/api/products?${query}` : '/api/products')
+      const response = await apiFetch(query ? `/api/products?${query}` : '/api/products')
 
       if (!response.ok) {
             throw new Error(await readApiError(response, 'Failed to fetch products'));
@@ -68,7 +68,7 @@ export async function getProducts(filters: ProductListFilters = {}): Promise<Pro
 }
 
 export async function getProductCategories(): Promise<ProductCategory[]> {
-      const response = await fetch('/api/categories')
+      const response = await apiFetch('/api/categories')
 
       if (!response.ok) {
             throw new Error(await readApiError(response, 'Failed to fetch categories'))
@@ -78,7 +78,7 @@ export async function getProductCategories(): Promise<ProductCategory[]> {
 }
 
 export async function getProductBySlug(slug: string): Promise<Product> {
-      const response = await fetch(`/api/products/${slug}`);
+      const response = await apiFetch(`/api/products/${slug}`);
 
       if (!response.ok) {
             throw new Error(await readApiError(response, 'Failed to fetch product'));

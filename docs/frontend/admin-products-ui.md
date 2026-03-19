@@ -66,6 +66,8 @@ Pages:
 Shared app wiring:
 
 - [index.tsx](c:/Users/user/NestCraft/client/src/routes/index.tsx)
+- [PageShell.tsx](c:/Users/user/NestCraft/client/src/components/PageShell.tsx)
+- [StatusPanel.tsx](c:/Users/user/NestCraft/client/src/components/StatusPanel.tsx)
 - [StoreHeader.tsx](c:/Users/user/NestCraft/client/src/components/StoreHeader.tsx)
 - [AuthContext.tsx](c:/Users/user/NestCraft/client/src/context/AuthContext.tsx)
 
@@ -247,6 +249,8 @@ Why this page matters:
 - it gives the admin a complete catalog view
 - it becomes the starting point for create, edit, deactivate, and reactivate actions
 
+It now uses the shared `PageShell` and `StatusPanel` components so admin catalog states match the rest of the app.
+
 ## Why Action Errors Are Separate
 
 The page keeps:
@@ -262,6 +266,17 @@ That is useful because:
 - a failed deactivate/reactivate action is a local action failure
 
 Those are not the same kind of error, and the UI should not treat them the same way.
+
+## Responsive Catalog Table
+
+The admin product list is still a dense table-style screen, so the current responsive treatment is pragmatic rather than magical.
+
+The page now:
+
+- wraps the inventory table in horizontal overflow
+- adds a narrow-screen hint for smaller viewports
+
+That is a better first deployment-polish step than pretending a dense operations table can collapse cleanly into an ordinary phone card layout without redesigning the workflow.
 
 ## Shared Product Form
 

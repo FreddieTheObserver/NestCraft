@@ -1,4 +1,4 @@
-import { readApiError } from '../utils/api'
+import { apiFetch, readApiError } from '../utils/api'
 
 export type CheckoutItemInput = {
       productId: number
@@ -47,7 +47,7 @@ export type OrderResponse = {
 }
 
 export async function createOrder(data: CreateOrderInput, token: string): Promise<OrderResponse> {
-      const response = await fetch('/api/orders', {
+      const response = await apiFetch('/api/orders', {
             method: 'POST',
             headers: {
                   'Content-Type': 'application/json',
@@ -64,7 +64,7 @@ export async function createOrder(data: CreateOrderInput, token: string): Promis
 }
 
 export async function getMyOrders(token: string): Promise<OrderResponse[]> {
-      const response = await fetch('/api/orders/me', {
+      const response = await apiFetch('/api/orders/me', {
             headers: {
                   Authorization: `Bearer ${token}`,
             },
@@ -81,7 +81,7 @@ export async function getMyOrderByOrderNumber(
       orderNumber: string,
       token: string,
 ): Promise<OrderResponse> {
-      const response = await fetch(`/api/orders/${orderNumber}`, {
+      const response = await apiFetch(`/api/orders/${orderNumber}`, {
             headers: {
                   Authorization: `Bearer ${token}`,
             },

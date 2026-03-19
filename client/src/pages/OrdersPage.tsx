@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
-import StoreHeader from '../components/StoreHeader'
+import PageShell from '../components/PageShell'
+import StatusPanel from '../components/StatusPanel'
 import { useAuth } from '../context/AuthContext'
 import { getMyOrders, type OrderResponse } from '../services/orders'
 
@@ -50,66 +51,50 @@ function OrdersPage() {
 
       if (loading) {
             return (
-                  <main className="min-h-screen bg-sand px-6 py-12 text-walnut sm:px-10 lg:px-16">
-                        <section className="mx-auto max-w-7xl space-y-8">
-                              <StoreHeader />
-                              <div className="rounded-[2rem] bg-white p-10 shadow-sm">
-                                    <p className="text-sm font-semibold uppercase tracking-[0.24em] text-clay">
-                                          Your orders
-                                    </p>
-                                    <h1 className="mt-4 text-4xl font-semibold">Loading purchase history...</h1>
-                              </div>
-                        </section>
-                  </main>
+                  <PageShell maxWidth="7xl">
+                        <StatusPanel
+                              eyebrow="Your orders"
+                              title="Loading purchase history..."
+                              message="Fetching your saved orders from the account API."
+                        />
+                  </PageShell>
             )
       }
 
       if (error) {
             return (
-                  <main className="min-h-screen bg-sand px-6 py-12 text-walnut sm:px-10 lg:px-16">
-                        <section className="mx-auto max-w-7xl space-y-8">
-                              <StoreHeader />
-                              <div className="rounded-[2rem] border border-red-200 bg-white p-10 shadow-sm">
-                                    <p className="text-sm font-semibold uppercase tracking-[0.24em] text-red-500">
-                                          Orders unavailable
-                                    </p>
-                                    <h1 className="mt-4 text-4xl font-semibold">We could not load your orders.</h1>
-                                    <p className="mt-4 text-stone-600">{error}</p>
-                              </div>
-                        </section>
-                  </main>
+                  <PageShell maxWidth="7xl">
+                        <StatusPanel
+                              eyebrow="Orders unavailable"
+                              title="We could not load your orders."
+                              message={error}
+                              tone="error"
+                        />
+                  </PageShell>
             )
       }
 
       if (orders.length === 0) {
             return (
-                  <main className="min-h-screen bg-sand px-6 py-12 text-walnut sm:px-10 lg:px-16">
-                        <section className="mx-auto max-w-7xl space-y-8">
-                              <StoreHeader />
-                              <div className="rounded-[2rem] bg-white p-10 shadow-sm">
-                                    <p className="text-sm font-semibold uppercase tracking-[0.24em] text-clay">
-                                          Your orders
-                                    </p>
-                                    <h1 className="mt-4 text-4xl font-semibold">No purchases yet.</h1>
-                                    <p className="mt-4 text-stone-600">
-                                          Once you complete checkout, your orders will appear here.
-                                    </p>
+                  <PageShell maxWidth="7xl">
+                              <StatusPanel
+                                    eyebrow="Your orders"
+                                    title="No purchases yet."
+                                    message="Once you complete checkout, your orders will appear here."
+                              >
                                     <Link
                                           to="/products"
                                           className="mt-6 inline-flex rounded-full bg-walnut px-6 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white transition hover:bg-clay"
                                     >
                                           Browse products
                                     </Link>
-                              </div>
-                        </section>
-                  </main>
+                              </StatusPanel>
+                  </PageShell>
             )
       }
 
       return (
-            <main className="min-h-screen bg-sand px-6 py-12 text-walnut sm:px-10 lg:px-16">
-                  <section className="mx-auto max-w-7xl space-y-8">
-                        <StoreHeader />
+            <PageShell maxWidth="7xl">
                         <div className="grid gap-8 rounded-[2rem] bg-gradient-to-r from-white/70 via-white/40 to-transparent p-8 shadow-[0_20px_50px_rgba(32,26,22,0.06)] lg:grid-cols-[1.3fr_0.7fr] lg:items-end">
                               <div className="space-y-4">
                                     <p className="text-sm font-semibold uppercase tracking-[0.28em] text-clay">
@@ -247,8 +232,7 @@ function OrdersPage() {
                                     </article>
                               ))}
                         </div>
-                  </section>
-            </main>
+            </PageShell>
       )
 }
 

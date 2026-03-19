@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useCart } from '../context/CartContext';
 
-import StoreHeader from "../components/StoreHeader";
+import PageShell from "../components/PageShell";
+import StatusPanel from "../components/StatusPanel";
 import { getProductBySlug, type Product } from "../services/products";
 
 function ProductDetailPage() {
@@ -51,74 +52,61 @@ function ProductDetailPage() {
 
       if (loading) {
             return (
-                  <main className="min-h-screen bg-sand px-6 py-12 text-walnut sm:px-10 lg:px-16">
-                        <section className="mx-auto max-w-6xl space-y-6">
+                  <PageShell maxWidth="6xl" sectionClassName="space-y-6">
                               <Link
                                     to="/products"
                                     className="inline-flex text-sm font-semibold uppercase tracking-[0.2em] text-clay transition hover:text-walnut"
                               >
                                     Back to products
                               </Link>
-                              <div className="rounded-[2rem] bg-white/70 p-10 shadow-[0_18px_40px_rgba(32,26,22,0.06)]">
-                                    <p className="text-sm font-semibold uppercase tracking-[0.24em] text-clay">
-                                          Loading product
-                                    </p>
-                                    <h1 className="mt-4 text-4xl font-semibold">Preparing product details...</h1>
-                              </div>
-                        </section>
-                  </main>
+                              <StatusPanel
+                                    eyebrow="Loading product"
+                                    title="Preparing product details..."
+                                    message="Loading the latest product information from the storefront API."
+                                    className="bg-white/70 shadow-[0_18px_40px_rgba(32,26,22,0.06)]"
+                              />
+                  </PageShell>
             )
       }
 
       if (error) {
             return (
-                  <main className="min-h-screen bg-sand px-6 py-12 text-walnut sm:px-10 lg:px-16">
-                        <section className="mx-auto max-w-4xl space-y-6">
+                  <PageShell maxWidth="4xl" sectionClassName="space-y-6">
                               <Link
                                     to="/products"
                                     className="inline-flex text-sm font-semibold uppercase tracking-[0.2em] text-clay transition hover:text-walnut"
                               >
                                     Back to products
                               </Link>
-                              <div className="rounded-[2rem] border border-red-200 bg-white p-10 shadow-sm">
-                                    <p className="text-sm font-semibold uppercase tracking-[0.24em] text-red-500">
-                                          Product unavailable
-                                    </p>
-                                    <h1 className="mt-4 text-3xl font-semibold">We could not load this product.</h1>
-                                    <p className="mt-3 text-stone-600">{error}</p>
-                              </div>
-                        </section>
-                  </main>
+                              <StatusPanel
+                                    eyebrow="Product unavailable"
+                                    title="We could not load this product."
+                                    message={error}
+                                    tone="error"
+                              />
+                  </PageShell>
             )
       }
 
       if (!product) {
             return (
-                  <main className="min-h-screen bg-sand px-6 py-12 text-walnut sm:px-10 lg:px-16">
-                        <section className="mx-auto max-w-4xl space-y-6">
+                  <PageShell maxWidth="4xl" sectionClassName="space-y-6">
                               <Link
                                     to="/products"
                                     className="inline-flex text-sm font-semibold uppercase tracking-[0.2em] text-clay transition hover:text-walnut"
                               >
                                     Back to products
                               </Link>
-                              <div className="rounded-[2rem] border border-stone-200 bg-white p-10 shadow-sm">
-                                    <p className="text-sm font-semibold uppercase tracking-[0.24em] text-clay">
-                                          Product not found
-                                    </p>
-                                    <h1 className="mt-4 text-3xl font-semibold">This item is not available.</h1>
-                                    <p className="mt-3 text-stone-600">
-                                          The product may have been removed, renamed, or is currently inactive.
-                                    </p>
-                              </div>
-                        </section>
-                  </main>
+                              <StatusPanel
+                                    eyebrow="Product not found"
+                                    title="This item is not available."
+                                    message="The product may have been removed, renamed, or is currently inactive."
+                              />
+                  </PageShell>
             )
       }
       return (
-            <main className="min-h-screen bg-sand px-6 py-12 text-walnut sm:px-10 lg:px-16">
-                  <section className="mx-auto max-w-6xl space-y-8">
-                        <StoreHeader />
+            <PageShell maxWidth="6xl">
                         <Link
                               to="/products"
                               className="inline-flex text-sm font-semibold uppercase tracking-[0.2em] text-clay transition hover:text-walnut"
@@ -246,8 +234,7 @@ function ProductDetailPage() {
                                     </div>
                               </div>
                         </div>
-                  </section>
-            </main>
+            </PageShell>
       )
 }
 

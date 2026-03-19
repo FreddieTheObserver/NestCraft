@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import AdminProductForm from '../components/AdminProductForm'
-import StoreHeader from '../components/StoreHeader'
+import PageShell from '../components/PageShell'
+import StatusPanel from '../components/StatusPanel'
 import { useAuth } from '../context/AuthContext'
 import {
       createAdminProduct,
@@ -89,44 +90,49 @@ function AdminCreateProductPage() {
 
       if (loading) {
             return (
-                  <main className="min-h-screen bg-sand px-6 py-12 text-walnut sm:px-10 lg:px-16">
-                        Loading product form...
-                  </main>
+                  <PageShell maxWidth="4xl">
+                        <StatusPanel
+                              eyebrow="Admin catalog"
+                              title="Loading product form..."
+                              message="Fetching categories before the form can open."
+                        />
+                  </PageShell>
             )
       }
 
       if (categories.length === 0) {
             return (
-                  <main className="min-h-screen bg-sand px-6 py-12 text-walnut sm:px-10 lg:px-16">
-                        No categories are available yet.
-                  </main>
+                  <PageShell maxWidth="4xl">
+                        <StatusPanel
+                              eyebrow="Admin catalog"
+                              title="No categories are available yet."
+                              message="Create at least one category before adding products."
+                        />
+                  </PageShell>
             )
       }
 
       return (
-            <main className="min-h-screen bg-sand px-6 py-12 text-walnut sm:px-10 lg:px-16">
-                  <section className="mx-auto max-w-4xl space-y-8">
-                        <StoreHeader />
-                        <div>
-                              <p className="text-sm font-semibold uppercase tracking-[0.24em] text-clay">
-                                    Admin catalog
-                              </p>
-                              <h1 className="mt-3 text-4xl font-semibold">Create product</h1>
-                        </div>
+            <PageShell maxWidth="4xl">
+                  <div>
+                        <p className="text-sm font-semibold uppercase tracking-[0.24em] text-clay">
+                              Admin catalog
+                        </p>
+                        <h1 className="mt-3 text-4xl font-semibold">Create product</h1>
+                  </div>
 
-                        <AdminProductForm
-                              initialValues={{
-                                    ...initialValues,
-                                    categoryId: categories[0]?.id ?? 0,
-                              }}
-                              categories={categories}
-                              submitLabel="Create product"
-                              loading={submitting}
-                              error={error}
-                              onSubmit={handleSubmit}
-                        />
-                  </section>
-            </main>
+                  <AdminProductForm
+                        initialValues={{
+                              ...initialValues,
+                              categoryId: categories[0]?.id ?? 0,
+                        }}
+                        categories={categories}
+                        submitLabel="Create product"
+                        loading={submitting}
+                        error={error}
+                        onSubmit={handleSubmit}
+                  />
+            </PageShell>
       )
 }
 

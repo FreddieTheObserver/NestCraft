@@ -1,1 +1,5 @@
-docs/roadmap.md
+client/.env
+client/.env.local
+client/.env.*.local
+server/.env
+AGENT.MD

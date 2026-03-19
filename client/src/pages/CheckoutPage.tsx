@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
-import StoreHeader from '../components/StoreHeader'
+import PageShell from '../components/PageShell'
+import StatusPanel from '../components/StatusPanel'
 import { useAuth } from '../context/AuthContext'
 import { useCart } from '../context/CartContext'
 import { createOrder, type OrderResponse } from '../services/orders'
@@ -71,20 +72,12 @@ function CheckoutPage() {
 
       if (createdOrder) {
             return (
-                  <main className="min-h-screen bg-sand px-6 py-12 text-walnut sm:px-10 lg:px-16">
-                        <section className="mx-auto max-w-6xl space-y-8">
-                              <StoreHeader />
-                              <div className="rounded-[2rem] bg-white p-10 shadow-sm">
-                                    <p className="text-sm font-semibold uppercase tracking-[0.24em] text-clay">
-                                          Order confirmed
-                                    </p>
-                                    <h1 className="mt-4 text-4xl font-semibold">
-                                          Your order has been placed successfully.
-                                    </h1>
-                                    <p className="mt-4 text-stone-600">
-                                          Order <strong>{createdOrder.orderNumber}</strong> is now in{' '}
-                                          <strong>{createdOrder.status}</strong> status.
-                                    </p>
+                  <PageShell maxWidth="6xl">
+                              <StatusPanel
+                                    eyebrow="Order confirmed"
+                                    title="Your order has been placed successfully."
+                                    message={`Order ${createdOrder.orderNumber} is now in ${createdOrder.status} status.`}
+                              >
                                     <div className="mt-8 grid gap-4 rounded-[1.5rem] bg-stone-50 p-6 sm:grid-cols-3">
                                           <div>
                                                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
@@ -119,38 +112,32 @@ function CheckoutPage() {
                                                 View order details
                                           </Link>
                                     </div>
-                              </div>
-                        </section>
-                  </main>
+                              </StatusPanel>
+                  </PageShell>
             )
       }
 
       if (items.length === 0) {
             return (
-                  <main className="min-h-screen bg-sand px-6 py-12 text-walnut sm:px-10 lg:px-16">
-                        <section className="mx-auto max-w-6xl space-y-8">
-                              <StoreHeader />
-                              <div className="rounded-[2rem] bg-white p-10 shadow-sm">
-                                    <h1 className="text-4xl font-semibold">Checkout needs cart items</h1>
-                                    <p className="mt-4 text-stone-600">
-                                          Add products to your cart before moving into checkout.
-                                    </p>
+                  <PageShell maxWidth="6xl">
+                              <StatusPanel
+                                    eyebrow="Checkout"
+                                    title="Checkout needs cart items"
+                                    message="Add products to your cart before moving into checkout."
+                              >
                                     <Link
                                           to="/products"
                                           className="mt-6 inline-flex rounded-full bg-walnut px-6 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white transition hover:bg-clay"
                                     >
                                           Browse products
                                     </Link>
-                              </div>
-                        </section>
-                  </main>
+                              </StatusPanel>
+                  </PageShell>
             )
       }
 
       return (
-            <main className="min-h-screen bg-sand px-6 py-12 text-walnut sm:px-10 lg:px-16">
-                  <section className="mx-auto max-w-6xl space-y-8">
-                        <StoreHeader />
+            <PageShell maxWidth="6xl">
                         <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
                               <div className="rounded-[2rem] bg-white p-8 shadow-sm">
                                     <p className="text-sm font-semibold uppercase tracking-[0.24em] text-clay">
@@ -262,8 +249,7 @@ function CheckoutPage() {
                                     </div>
                               </aside>
                         </div>
-                  </section>
-            </main>
+            </PageShell>
       )
 }
 

@@ -1,4 +1,4 @@
-import { readApiError } from '../utils/api'
+import { apiFetch, readApiError } from '../utils/api'
 
 type AuthUser = {
       id: number
@@ -24,7 +24,7 @@ type LoginInput = {
 }
 
 export async function registerUser(data: RegisterInput): Promise<AuthResponse> {
-      const response = await fetch('/api/auth/register', {
+      const response = await apiFetch('/api/auth/register', {
             method: 'POST',
             headers: {
                   'Content-Type': 'application/json',
@@ -40,7 +40,7 @@ export async function registerUser(data: RegisterInput): Promise<AuthResponse> {
 }
 
 export async function loginUser(data: LoginInput): Promise<AuthResponse> {
-      const response = await fetch('/api/auth/login', {
+      const response = await apiFetch('/api/auth/login', {
             method: 'POST',
             headers: {
                   'Content-Type': 'application/json',
