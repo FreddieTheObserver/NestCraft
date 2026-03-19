@@ -13,6 +13,7 @@ import AdminEditProductPage from '../pages/AdminEditProductPage';
 import AdminOrdersPage from '../pages/AdminOrdersPage';
 import ProtectedRoute from '../components/ProtectedRoute';
 import AdminRoute from '../components/AdminRoute';
+import OrderDetailPage from '../pages/OrderDetailPage';
 
 export const router = createBrowserRouter([
       {
@@ -91,4 +92,12 @@ export const router = createBrowserRouter([
                   </AdminRoute>
             ),
       },
+      {
+            path: '/orders/:orderNumber',
+            element: (
+                  <ProtectedRoute>
+                        <OrderDetailPage />
+                  </ProtectedRoute>
+            )
+      }
 ]);

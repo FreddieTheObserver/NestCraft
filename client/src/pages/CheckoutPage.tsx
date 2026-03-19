@@ -82,7 +82,8 @@ function CheckoutPage() {
                                           Your order has been placed successfully.
                                     </h1>
                                     <p className="mt-4 text-stone-600">
-                                          Order #{createdOrder.id} is now in <strong>{createdOrder.status}</strong> status.
+                                          Order <strong>{createdOrder.orderNumber}</strong> is now in{' '}
+                                          <strong>{createdOrder.status}</strong> status.
                                     </p>
                                     <div className="mt-8 grid gap-4 rounded-[1.5rem] bg-stone-50 p-6 sm:grid-cols-3">
                                           <div>
@@ -112,10 +113,10 @@ function CheckoutPage() {
                                                 Continue shopping
                                           </Link>
                                           <Link
-                                                to="/cart"
+                                                to={`/orders/${createdOrder.orderNumber}`}
                                                 className="rounded-full border border-stone-300 bg-white px-6 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-walnut transition hover:border-clay hover:text-clay"
                                           >
-                                                Back to cart
+                                                View order details
                                           </Link>
                                     </div>
                               </div>

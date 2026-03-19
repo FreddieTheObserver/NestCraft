@@ -150,7 +150,7 @@ function OrdersPage() {
                                           <div className="flex flex-col gap-5 border-b border-stone-200 pb-5 sm:flex-row sm:items-start sm:justify-between">
                                                 <div>
                                                       <p className="text-sm font-semibold uppercase tracking-[0.2em] text-clay">
-                                                            Order #{order.id}
+                                                            {order.orderNumber}
                                                       </p>
                                                       <h2 className="mt-3 text-2xl font-semibold text-walnut">
                                                             {order.items.length} item(s) in this order
@@ -158,6 +158,12 @@ function OrdersPage() {
                                                       <p className="mt-2 text-sm text-stone-500">
                                                             Placed on {new Date(order.createdAt).toLocaleDateString()}
                                                       </p>
+                                                      <Link
+                                                            to={`/orders/${order.orderNumber}`}
+                                                            className="mt-4 inline-flex rounded-full border border-stone-200 px-4 py-2 text-sm font-semibold text-walnut transition hover:border-clay hover:text-clay"
+                                                      >
+                                                            View details
+                                                      </Link>
                                                 </div>
                                                 <div className="rounded-[1.5rem] bg-stone-50 px-5 py-4 text-right">
                                                       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">

@@ -19,6 +19,7 @@ export type OrderStatus = 'pending' | 'confirmed' | 'cancelled'
 
 export type OrderResponse = {
       id: number
+      orderNumber: string
       status: OrderStatus
       subtotal: string
       shippingFee: string
@@ -74,4 +75,21 @@ export async function getMyOrders(token: string): Promise<OrderResponse[]> {
       }
 
       return response.json() as Promise<OrderResponse[]>
+}
+
+export async function getMyOrderByOrderNumber(
+      orderNumber: string,
+      token: string,
+): Promise<OrderResponse> {
+      const response = await fetch(`/api/orders/${orderNumber}`, {
+            headers: {
+                  Authorization: `Bearer ${token}`,
+            },
+      });
+
+      if (!response.ok) {
+            throw new Error(await readApiError(response, "Failed to fetch order"));
+      }
+
+      return response.json() as Promise<OrderResponse>;
 }
