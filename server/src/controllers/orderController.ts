@@ -127,7 +127,7 @@ export async function updateOrderStatusHandler(
       }
 }
 
-export async function getMyOrderNumberHandler(
+export async function getMyOrderByOrderNumberHandler(
       req: AuthenticatedRequest & { params: { orderNumber: string }},
       res: Response,
 ) {
@@ -141,10 +141,6 @@ export async function getMyOrderNumberHandler(
             const { orderNumber } = req.params;
 
             const order = await getOrderByOrderNumberForUser(orderNumber, userId);
-
-            if (!order) {
-                  return sendError(res, 404, "ORDER_NOT_FOUND", "Order not found");
-            }
 
             return res.status(200).json(order);
       } catch (error) {

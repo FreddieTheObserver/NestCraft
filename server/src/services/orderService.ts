@@ -226,7 +226,7 @@ export async function getOrderByOrderNumberForUser(
       orderNumber: string,
       userId: number,
 ) {
-      return prisma.order.findFirst({
+      const order = await prisma.order.findFirst({
             where: {
                   orderNumber,
                   userId,
@@ -246,6 +246,12 @@ export async function getOrderByOrderNumberForUser(
                   },
             },
       });
+
+      if (!order) {
+            throw new Error("ORDER_NOT_FOUND");
+      }
+
+      return order;
 }
 
 
