@@ -6,234 +6,255 @@ import StatusPanel from '../components/StatusPanel'
 import { useAuth } from '../context/AuthContext'
 import { getMyOrders, type OrderResponse } from '../services/orders'
 
+const statusCopy = {
+  pending: 'Pending review',
+  confirmed: 'Confirmed',
+  cancelled: 'Cancelled',
+} as const
+
+const statusTone = {
+  pending: 'bg-secondary/10 text-secondary',
+  confirmed: 'bg-surface-high text-ink',
+  cancelled: 'bg-error-soft text-error',
+} as const
+
 function OrdersPage() {
-      const { token } = useAuth()
-      const [orders, setOrders] = useState<OrderResponse[]>([])
-      const [loading, setLoading] = useState(true)
-      const [error, setError] = useState('')
+  const { token } = useAuth()
+  const [orders, setOrders] = useState<OrderResponse[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
-      useEffect(() => {
-            let cancelled = false
+  useEffect(() => {
+    let cancelled = false
 
-            async function loadOrders() {
-                  if (!token) {
-                        setError('You must be logged in to view your orders.')
-                        setLoading(false)
-                        return
-                  }
-
-                  try {
-                        setLoading(true)
-                        setError('')
-
-                        const data = await getMyOrders(token)
-
-                        if (!cancelled) {
-                              setOrders(data)
-                        }
-                  } catch (error) {
-                        if (!cancelled) {
-                              setError(error instanceof Error ? error.message : 'Failed to load your orders.')
-                        }
-                  } finally {
-                        if (!cancelled) {
-                              setLoading(false)
-                        }
-                  }
-            }
-
-            void loadOrders()
-
-            return () => {
-                  cancelled = true
-            }
-      }, [token])
-
-      if (loading) {
-            return (
-                  <PageShell maxWidth="7xl">
-                        <StatusPanel
-                              eyebrow="Your orders"
-                              title="Loading purchase history..."
-                              message="Fetching your saved orders from the account API."
-                        />
-                  </PageShell>
-            )
+    async function loadOrders() {
+      if (!token) {
+        setError('You must be logged in to view your orders.')
+        setLoading(false)
+        return
       }
 
-      if (error) {
-            return (
-                  <PageShell maxWidth="7xl">
-                        <StatusPanel
-                              eyebrow="Orders unavailable"
-                              title="We could not load your orders."
-                              message={error}
-                              tone="error"
-                        />
-                  </PageShell>
-            )
-      }
+      try {
+        setLoading(true)
+        setError('')
 
-      if (orders.length === 0) {
-            return (
-                  <PageShell maxWidth="7xl">
-                              <StatusPanel
-                                    eyebrow="Your orders"
-                                    title="No purchases yet."
-                                    message="Once you complete checkout, your orders will appear here."
-                              >
-                                    <Link
-                                          to="/products"
-                                          className="mt-6 inline-flex rounded-full bg-walnut px-6 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white transition hover:bg-clay"
-                                    >
-                                          Browse products
-                                    </Link>
-                              </StatusPanel>
-                  </PageShell>
-            )
-      }
+        const data = await getMyOrders(token)
 
-      return (
-            <PageShell maxWidth="7xl">
-                        <div className="grid gap-8 rounded-[2rem] bg-gradient-to-r from-white/70 via-white/40 to-transparent p-8 shadow-[0_20px_50px_rgba(32,26,22,0.06)] lg:grid-cols-[1.3fr_0.7fr] lg:items-end">
-                              <div className="space-y-4">
-                                    <p className="text-sm font-semibold uppercase tracking-[0.28em] text-clay">
-                                          Purchase history
-                                    </p>
-                                    <h1 className="text-4xl font-semibold leading-tight sm:text-5xl">
-                                          Review the orders you have placed with NestCraft.
-                                    </h1>
-                                    <p className="max-w-2xl text-base leading-7 text-stone-600">
-                                          This page shows the server-saved orders created through the checkout endpoint.
-                                    </p>
-                              </div>
-                              <div className="rounded-[1.5rem] border border-stone-200/80 bg-white/80 p-6">
-                                    <p className="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">
-                                          Order snapshot
-                                    </p>
-                                    <div className="mt-5 grid grid-cols-2 gap-4">
-                                          <div>
-                                                <p className="text-3xl font-semibold text-walnut">{orders.length}</p>
-                                                <p className="mt-1 text-sm text-stone-500">Orders placed</p>
-                                          </div>
-                                          <div>
-                                                <p className="text-3xl font-semibold text-walnut">
-                                                      ${orders.reduce((sum, order) => sum + Number(order.totalAmount), 0).toFixed(2)}
-                                                </p>
-                                                <p className="mt-1 text-sm text-stone-500">Total spent</p>
-                                          </div>
-                                    </div>
-                              </div>
+        if (!cancelled) {
+          setOrders(data)
+        }
+      } catch (loadError) {
+        if (!cancelled) {
+          setError(
+            loadError instanceof Error
+              ? loadError.message
+              : 'Failed to load your orders.',
+          )
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false)
+        }
+      }
+    }
+
+    void loadOrders()
+
+    return () => {
+      cancelled = true
+    }
+  }, [token])
+
+  if (loading) {
+    return (
+      <PageShell maxWidth="7xl">
+        <StatusPanel
+          eyebrow="Your orders"
+          title="Loading your purchase archive..."
+          message="Fetching saved NestCraft orders for this account."
+        />
+      </PageShell>
+    )
+  }
+
+  if (error) {
+    return (
+      <PageShell maxWidth="7xl">
+        <StatusPanel
+          eyebrow="Orders unavailable"
+          title="We could not load your orders."
+          message={error}
+          tone="error"
+        />
+      </PageShell>
+    )
+  }
+
+  if (orders.length === 0) {
+    return (
+      <PageShell maxWidth="7xl">
+        <StatusPanel
+          eyebrow="Your orders"
+          title="No purchases yet."
+          message="Complete checkout once and your order history will begin building here."
+        >
+          <Link to="/products" className="editorial-button-primary mt-8">
+            Browse products
+          </Link>
+        </StatusPanel>
+      </PageShell>
+    )
+  }
+
+  const totalSpent = orders.reduce((sum, order) => sum + Number(order.totalAmount), 0)
+  const pendingCount = orders.filter((order) => order.status === 'pending').length
+
+  return (
+    <PageShell maxWidth="7xl">
+      <section className="grid gap-8 lg:grid-cols-[1.08fr_0.92fr] lg:items-end">
+        <div className="space-y-4">
+          <p className="editorial-kicker">Purchase history</p>
+          <h1 className="editorial-title max-w-4xl">A calm ledger of everything you have ordered.</h1>
+          <p className="editorial-copy max-w-2xl">
+            Review saved order numbers, revisit product choices, and keep track of
+            the order statuses returned by the backend.
+          </p>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-3">
+          <div className="editorial-stat">
+            <p className="editorial-kicker text-primary">Orders placed</p>
+            <p className="mt-4 text-4xl font-bold tracking-[-0.04em] text-ink">
+              {orders.length}
+            </p>
+          </div>
+          <div className="editorial-stat">
+            <p className="editorial-kicker text-primary">Pending</p>
+            <p className="mt-4 text-4xl font-bold tracking-[-0.04em] text-ink">
+              {pendingCount}
+            </p>
+          </div>
+          <div className="editorial-stat">
+            <p className="editorial-kicker text-primary">Total spent</p>
+            <p className="mt-4 text-4xl font-bold tracking-[-0.04em] text-ink">
+              ${totalSpent.toFixed(2)}
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="space-y-6">
+        {orders.map((order) => (
+          <article key={order.id} className="editorial-panel p-7 sm:p-8">
+            <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
+              <div className="space-y-5">
+                <div className="space-y-3">
+                  <p className="editorial-kicker">{order.orderNumber}</p>
+                  <h2 className="font-display text-4xl leading-tight tracking-[-0.03em] text-ink">
+                    {order.items.length} item(s) in this order
+                  </h2>
+                  <p className="editorial-copy">
+                    Placed on {new Date(order.createdAt).toLocaleDateString()}
+                  </p>
+                </div>
+
+                <div className="space-y-3">
+                  {order.items.map((item) => (
+                    <div
+                      key={item.id}
+                      className="rounded-xl bg-surface-low p-4 transition-colors hover:bg-surface-container"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="h-20 w-20 overflow-hidden rounded-xl bg-surface-white">
+                          {item.product.imageUrl ? (
+                            <img
+                              src={item.product.imageUrl}
+                              alt={item.product.name}
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            <div className="flex h-full items-center justify-center text-[0.7rem] uppercase tracking-[0.16em] text-primary">
+                              No image
+                            </div>
+                          )}
                         </div>
 
-                        <div className="space-y-6">
-                              {orders.map((order) => (
-                                    <article
-                                          key={order.id}
-                                          className="rounded-[2rem] bg-white p-8 shadow-[0_18px_40px_rgba(32,26,22,0.05)]"
-                                    >
-                                          <div className="flex flex-col gap-5 border-b border-stone-200 pb-5 sm:flex-row sm:items-start sm:justify-between">
-                                                <div>
-                                                      <p className="text-sm font-semibold uppercase tracking-[0.2em] text-clay">
-                                                            {order.orderNumber}
-                                                      </p>
-                                                      <h2 className="mt-3 text-2xl font-semibold text-walnut">
-                                                            {order.items.length} item(s) in this order
-                                                      </h2>
-                                                      <p className="mt-2 text-sm text-stone-500">
-                                                            Placed on {new Date(order.createdAt).toLocaleDateString()}
-                                                      </p>
-                                                      <Link
-                                                            to={`/orders/${order.orderNumber}`}
-                                                            className="mt-4 inline-flex rounded-full border border-stone-200 px-4 py-2 text-sm font-semibold text-walnut transition hover:border-clay hover:text-clay"
-                                                      >
-                                                            View details
-                                                      </Link>
-                                                </div>
-                                                <div className="rounded-[1.5rem] bg-stone-50 px-5 py-4 text-right">
-                                                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
-                                                            Status
-                                                      </p>
-                                                      <p className="mt-2 text-lg font-semibold text-walnut">{order.status}</p>
-                                                      <p className="mt-2 text-sm text-stone-500">
-                                                            Total ${order.totalAmount}
-                                                      </p>
-                                                </div>
-                                          </div>
-
-                                          <div className="mt-6 grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
-                                                <div className="space-y-4">
-                                                      {order.items.map((item) => (
-                                                            <div
-                                                                  key={item.id}
-                                                                  className="flex items-center gap-4 rounded-[1.5rem] border border-stone-200/80 p-4"
-                                                            >
-                                                                  <div className="h-20 w-20 overflow-hidden rounded-xl bg-stone-100">
-                                                                        {item.product.imageUrl ? (
-                                                                              <img
-                                                                                    src={item.product.imageUrl}
-                                                                                    alt={item.product.name}
-                                                                                    className="h-full w-full object-cover"
-                                                                              />
-                                                                        ) : (
-                                                                              <div className="flex h-full items-center justify-center text-xs text-stone-500">
-                                                                                    No image
-                                                                              </div>
-                                                                        )}
-                                                                  </div>
-                                                                  <div className="min-w-0 flex-1">
-                                                                        <Link
-                                                                              to={`/products/${item.product.slug}`}
-                                                                              className="text-lg font-semibold text-walnut transition hover:text-clay"
-                                                                        >
-                                                                              {item.product.name}
-                                                                        </Link>
-                                                                        <p className="mt-1 text-sm text-stone-500">
-                                                                              Qty {item.quantity} - ${item.unitPrice} each
-                                                                        </p>
-                                                                  </div>
-                                                                  <p className="text-sm font-semibold text-walnut">
-                                                                        ${(Number(item.unitPrice) * item.quantity).toFixed(2)}
-                                                                  </p>
-                                                            </div>
-                                                      ))}
-                                                </div>
-
-                                                <aside className="rounded-[1.5rem] bg-stone-50 p-5">
-                                                      <p className="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">
-                                                            Delivery details
-                                                      </p>
-                                                      <div className="mt-4 space-y-3 text-sm text-stone-600">
-                                                            <p><strong className="text-walnut">Name:</strong> {order.shippingName}</p>
-                                                            <p><strong className="text-walnut">Email:</strong> {order.shippingEmail}</p>
-                                                            <p><strong className="text-walnut">Phone:</strong> {order.shippingPhone}</p>
-                                                            <p><strong className="text-walnut">City:</strong> {order.shippingCity}</p>
-                                                            <p><strong className="text-walnut">Address:</strong> {order.shippingAddress}</p>
-                                                            {order.notes ? (
-                                                                  <p><strong className="text-walnut">Notes:</strong> {order.notes}</p>
-                                                            ) : null}
-                                                      </div>
-                                                      <div className="mt-5 space-y-2 border-t border-stone-200 pt-4 text-sm">
-                                                            <div className="flex items-center justify-between text-stone-600">
-                                                                  <span>Subtotal</span>
-                                                                  <span>${order.subtotal}</span>
-                                                            </div>
-                                                            <div className="flex items-center justify-between text-stone-600">
-                                                                  <span>Shipping</span>
-                                                                  <span>${order.shippingFee}</span>
-                                                            </div>
-                                                            <div className="flex items-center justify-between font-semibold text-walnut">
-                                                                  <span>Total</span>
-                                                                  <span>${order.totalAmount}</span>
-                                                            </div>
-                                                      </div>
-                                                </aside>
-                                          </div>
-                                    </article>
-                              ))}
+                        <div className="min-w-0 flex-1">
+                          <Link
+                            to={`/products/${item.product.slug}`}
+                            className="font-display text-2xl leading-tight tracking-[-0.02em] text-ink transition hover:text-secondary"
+                          >
+                            {item.product.name}
+                          </Link>
+                          <p className="mt-2 text-sm text-primary">
+                            Qty {item.quantity} - ${item.unitPrice} each
+                          </p>
                         </div>
-            </PageShell>
-      )
+
+                        <p className="text-sm font-bold uppercase tracking-[0.12em] text-ink">
+                          ${(Number(item.unitPrice) * item.quantity).toFixed(2)}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <aside className="space-y-4">
+                <div className="editorial-mini-cart p-5">
+                  <p className="editorial-kicker text-primary">Status</p>
+                  <div className="mt-4 flex items-center justify-between gap-3">
+                    <span
+                      className={`rounded-lg px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] ${statusTone[order.status]}`}
+                    >
+                      {statusCopy[order.status]}
+                    </span>
+                    <span className="text-lg font-bold tracking-[-0.02em] text-ink">
+                      ${order.totalAmount}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="editorial-panel-muted p-5">
+                  <p className="editorial-kicker text-primary">Delivery details</p>
+                  <div className="mt-4 space-y-2 text-sm leading-6 text-primary">
+                    <p>{order.shippingName}</p>
+                    <p>{order.shippingEmail}</p>
+                    <p>{order.shippingPhone}</p>
+                    <p>{order.shippingCity}</p>
+                    <p>{order.shippingAddress}</p>
+                    {order.notes ? <p>Notes: {order.notes}</p> : null}
+                  </div>
+                </div>
+
+                <div className="editorial-panel-muted p-5">
+                  <div className="flex items-center justify-between text-sm text-primary">
+                    <span>Subtotal</span>
+                    <span>${order.subtotal}</span>
+                  </div>
+                  <div className="mt-3 flex items-center justify-between text-sm text-primary">
+                    <span>Shipping</span>
+                    <span>${order.shippingFee}</span>
+                  </div>
+                  <div className="mt-5 flex items-center justify-between text-lg font-bold tracking-[-0.02em] text-ink">
+                    <span>Total</span>
+                    <span>${order.totalAmount}</span>
+                  </div>
+                </div>
+
+                <Link
+                  to={`/orders/${order.orderNumber}`}
+                  className="editorial-button-primary w-full"
+                >
+                  View order details
+                </Link>
+              </aside>
+            </div>
+          </article>
+        ))}
+      </section>
+    </PageShell>
+  )
 }
 
 export default OrdersPage

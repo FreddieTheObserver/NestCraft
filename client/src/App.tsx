@@ -54,29 +54,29 @@ function App() {
             <h1 className="max-w-3xl text-5xl font-semibold leading-tight sm:text-6xl">
               Home essentials, built on a clean PERN foundation.
             </h1>
-            <p className="max-w-2xl text-lg leading-8 text-stone-700">
+            <p className="max-w-2xl text-lg leading-8 text-primary">
               The starter scaffolding is cleaned up. Next, you can wire routing,
               API services, and the first product pages without carrying
               default Vite demo code forward.
             </p>
-            <div className="rounded-2xl border border-clay/15 bg-white/80 px-5 py-4 text-sm shadow-sm">
+            <div className="rounded-2xl border border-clay/15 bg-surface-white/80 px-5 py-4 text-sm shadow-ambient">
               <p className="font-semibold text-walnut">API status</p>
               <p
                 className={
                   health.status === 'error'
-                    ? 'mt-2 text-red-600'
-                    : 'mt-2 text-stone-700'
+                    ? 'mt-2 text-error'
+                    : 'mt-2 text-primary'
                 }
               >
                 {health.message}
               </p>
             </div>
           </div>
-          <aside className="rounded-[2rem] border border-clay/10 bg-white/70 p-8 shadow-[0_18px_50px_rgba(32,26,22,0.08)] backdrop-blur">
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">
+          <aside className="rounded-[2rem] border border-clay/10 bg-surface-white/70 p-8 shadow-lift backdrop-blur">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">
               Current client stack
             </p>
-            <ul className="mt-5 space-y-3 text-base text-stone-700">
+            <ul className="mt-5 space-y-3 text-base text-primary">
               <li>React 19 + TypeScript</li>
               <li>Vite 8</li>
               <li>Tailwind CSS 3</li>

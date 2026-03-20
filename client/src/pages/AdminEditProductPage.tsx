@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 
 import AdminProductForm from '../components/AdminProductForm'
 import PageShell from '../components/PageShell'
@@ -136,22 +136,45 @@ function AdminEditProductPage() {
       }
 
       return (
-            <PageShell maxWidth="4xl">
-                  <div>
-                        <p className="text-sm font-semibold uppercase tracking-[0.24em] text-clay">
-                              Admin catalog
-                        </p>
-                        <h1 className="mt-3 text-4xl font-semibold">Edit product</h1>
-                  </div>
+            <PageShell maxWidth="6xl">
+                  <section className="grid gap-8 lg:grid-cols-[0.92fr_1.08fr] lg:items-start">
+                        <div className="space-y-5 lg:sticky lg:top-6">
+                              <Link to="/admin/products" className="editorial-button-tertiary">
+                                    Back to catalog
+                              </Link>
 
-                  <AdminProductForm
-                        initialValues={initialValues}
-                        categories={categories}
-                        submitLabel="Save changes"
-                        loading={submitting}
-                        error={error}
-                        onSubmit={handleSubmit}
-                  />
+                              <div className="editorial-panel-muted p-7 sm:p-8">
+                                    <p className="editorial-kicker">Admin catalog</p>
+                                    <h1 className="editorial-heading mt-4">Edit the selected catalog piece.</h1>
+                                    <p className="editorial-copy mt-4 max-w-xl">
+                                          Update product details, storefront visibility, and merchandising flags from one place.
+                                    </p>
+                                    <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                                          <div className="editorial-stat">
+                                                <p className="editorial-kicker text-primary">Current stock</p>
+                                                <p className="mt-4 text-3xl font-bold tracking-[-0.04em] text-ink">
+                                                      {product.stock}
+                                                </p>
+                                          </div>
+                                          <div className="editorial-stat">
+                                                <p className="editorial-kicker text-primary">Merchandising</p>
+                                                <p className="mt-4 text-3xl font-bold tracking-[-0.04em] text-ink">
+                                                      {product.isFeatured ? 'Featured' : 'Standard'}
+                                                </p>
+                                          </div>
+                                    </div>
+                              </div>
+                        </div>
+
+                        <AdminProductForm
+                              initialValues={initialValues}
+                              categories={categories}
+                              submitLabel="Save changes"
+                              loading={submitting}
+                              error={error}
+                              onSubmit={handleSubmit}
+                        />
+                  </section>
             </PageShell>
       )
 }

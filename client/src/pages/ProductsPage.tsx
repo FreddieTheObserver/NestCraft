@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 
 import PageShell from '../components/PageShell'
 import ProductCard from '../components/ProductCard'
@@ -163,9 +163,9 @@ function ProductsPage() {
       <PageShell maxWidth="7xl">
         <StatusPanel
           eyebrow="NestCraft catalog"
-          title="Loading products..."
-          message="Fetching the current catalog and browse filters."
-          className="max-w-3xl"
+          title="Loading the current collection..."
+          message="Fetching product imagery, available categories, and the live browse controls."
+          className="max-w-4xl"
         />
       </PageShell>
     )
@@ -175,8 +175,8 @@ function ProductsPage() {
     return (
       <PageShell maxWidth="4xl">
         <StatusPanel
-          eyebrow="Products unavailable"
-          title="We could not load the catalog."
+          eyebrow="Catalog unavailable"
+          title="We could not load the collection."
           message={error}
           tone="error"
         />
@@ -188,19 +188,19 @@ function ProductsPage() {
     return (
       <PageShell maxWidth="4xl">
         <StatusPanel
-          eyebrow="Products"
-          title="No products found."
+          eyebrow="NestCraft catalog"
+          title="No pieces matched this view."
           message={
             hasActiveFilters
-              ? 'No products match your current search, category, or sort combination.'
-              : 'The API responded successfully, but there are no active products to display yet.'
+              ? 'Try widening your search, clearing the category, or returning to the default sort.'
+              : 'The storefront is reachable, but there are no active products to display yet.'
           }
         >
           {hasActiveFilters ? (
             <button
               type="button"
               onClick={clearFilters}
-              className="mt-6 inline-flex rounded-full border border-stone-200 px-5 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-walnut transition hover:border-clay hover:text-clay"
+              className="editorial-button-secondary mt-8"
             >
               Clear filters
             </button>
@@ -210,72 +210,168 @@ function ProductsPage() {
     )
   }
 
+  const featuredProduct = products.find((product) => product.isFeatured) ?? products[0]
+  const visibleCategoryCount = new Set(products.map((product) => product.category.id)).size
+  const totalVisibleStock = products.reduce((sum, product) => sum + product.stock, 0)
+  const activeFilters = [
+    search ? `Search: ${search}` : null,
+    category
+      ? `Category: ${categories.find((item) => item.slug === category)?.name ?? category}`
+      : null,
+    sort === 'price-asc'
+      ? 'Price: low to high'
+      : sort === 'price-desc'
+        ? 'Price: high to low'
+        : null,
+  ].filter(Boolean) as string[]
+
   return (
     <PageShell maxWidth="7xl">
-        <div className="grid gap-8 rounded-[2rem] bg-gradient-to-r from-white/70 via-white/40 to-transparent p-8 shadow-[0_20px_50px_rgba(32,26,22,0.06)] lg:grid-cols-[1.3fr_0.7fr] lg:items-end">
-          <div className="space-y-4">
-            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-clay">
-              NestCraft catalog
-            </p>
-            <h1 className="text-4xl font-semibold leading-tight sm:text-5xl">
-              Home essentials designed to feel warm, practical, and lived in.
+      <section className="grid gap-12 lg:grid-cols-[1.06fr_0.94fr] lg:items-start">
+        <div className="space-y-8 pt-3 lg:pt-8">
+          <div className="space-y-6">
+            <p className="editorial-kicker">The Curated Canvas</p>
+            <h1 className="editorial-title max-w-4xl lg:max-w-3xl">
+              Modern objects for rooms that should feel composed, quiet, and useful.
             </h1>
-            <p className="max-w-2xl text-base leading-7 text-stone-600">
-              Browse the live catalog, filter by category, search by product details,
-              and sort the collection to match what you want to see.
+            <p className="editorial-copy max-w-2xl">
+              Browse the live NestCraft catalog by category, search what matters,
+              and sort the collection without losing the calm of the space. The
+              interface stays deliberately quiet so the products remain the protagonist.
             </p>
-            <p className="text-sm text-stone-500">
-              {hasActiveFilters
-                ? 'Showing filtered results from the active catalog.'
-                : 'Showing the full active product catalog.'}
-            </p>
-            {isFetching ? (
-              <p className="text-sm font-semibold uppercase tracking-[0.16em] text-clay">
-                Updating results...
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-[1.2fr_0.8fr_0.8fr]">
+            <div className="editorial-stat">
+              <p className="editorial-kicker text-primary">Visible pieces</p>
+              <p className="mt-4 text-4xl font-bold tracking-[-0.04em] text-ink">
+                {products.length}
               </p>
+              <p className="mt-2 text-sm text-primary">Live results in the current view</p>
+            </div>
+            <div className="editorial-stat">
+              <p className="editorial-kicker text-primary">Categories</p>
+              <p className="mt-4 text-4xl font-bold tracking-[-0.04em] text-ink">
+                {visibleCategoryCount}
+              </p>
+            </div>
+            <div className="editorial-stat">
+              <p className="editorial-kicker text-primary">Available stock</p>
+              <p className="mt-4 text-4xl font-bold tracking-[-0.04em] text-ink">
+                {totalVisibleStock}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-4">
+            <Link
+              to={featuredProduct ? `/products/${featuredProduct.slug}` : '/products'}
+              className="editorial-button-primary"
+            >
+              View featured piece
+            </Link>
+            {hasActiveFilters ? (
+              <button
+                type="button"
+                onClick={clearFilters}
+                className="editorial-button-secondary"
+              >
+                Reset filters
+              </button>
+            ) : null}
+            {isFetching ? (
+              <p className="editorial-kicker text-secondary">Updating results</p>
             ) : null}
           </div>
-          <div className="rounded-[1.5rem] border border-stone-200/80 bg-white/80 p-6">
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">
-              Collection snapshot
-            </p>
-            <div className="mt-5 grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-3xl font-semibold text-walnut">{products.length}</p>
-                <p className="mt-1 text-sm text-stone-500">Visible products</p>
+        </div>
+
+        <div className="relative lg:pt-2">
+          <div className="editorial-panel-muted overflow-hidden p-6 sm:p-8">
+            <div className="grid gap-8 lg:grid-cols-[0.88fr_1.12fr] lg:items-end">
+              <div className="space-y-5">
+                <span className="editorial-chip">Editor&apos;s pick</span>
+                <h2 className="font-display text-4xl leading-tight tracking-[-0.03em] text-ink">
+                  {featuredProduct.name}
+                </h2>
+                <p className="editorial-copy">{featuredProduct.description}</p>
+                <div className="flex flex-wrap gap-3">
+                  <span className="editorial-chip-accent">${featuredProduct.price}</span>
+                  <span className="editorial-chip">{featuredProduct.category.name}</span>
+                </div>
               </div>
-              <div>
-                <p className="text-3xl font-semibold text-walnut">
-                  {new Set(products.map((product) => product.category.id)).size}
-                </p>
-                <p className="mt-1 text-sm text-stone-500">Visible categories</p>
+
+              <div className="relative lg:translate-y-12">
+                <div className="overflow-hidden rounded-[1.5rem] bg-surface-white shadow-lift">
+                  {featuredProduct.imageUrl ? (
+                    <img
+                      src={featuredProduct.imageUrl}
+                      alt={featuredProduct.name}
+                      className="aspect-[4/5] w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex aspect-[4/5] items-center justify-center px-8 text-center">
+                      <div className="space-y-3">
+                        <p className="editorial-kicker text-primary">NestCraft</p>
+                        <p className="text-sm leading-6 text-primary">
+                          The current featured piece has no cover image yet.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="editorial-mini-cart absolute bottom-4 left-4 max-w-[16rem] p-4">
+                  <p className="editorial-kicker text-primary">Current edit</p>
+                  <p className="mt-3 text-sm leading-6 text-primary">
+                    Start with a hero piece, then layer in quieter supporting objects.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
         </div>
+      </section>
 
-        <div className="grid gap-4 rounded-[1.75rem] border border-stone-200/80 bg-white/80 p-5 shadow-sm lg:grid-cols-[1.4fr_0.8fr_0.8fr_auto]">
+      <section className="editorial-glass p-5 sm:p-7">
+        <div className="flex flex-col gap-4 pb-6 lg:flex-row lg:items-end lg:justify-between">
+          <div className="space-y-2">
+            <p className="editorial-kicker text-primary">Browse controls</p>
+            <p className="text-sm leading-6 text-primary">
+              Showing {products.length} piece{products.length === 1 ? '' : 's'} in this view.
+            </p>
+          </div>
+
+          {activeFilters.length > 0 ? (
+            <div className="flex flex-wrap gap-3">
+              {activeFilters.map((item) => (
+                <span key={item} className="editorial-chip">
+                  {item}
+                </span>
+              ))}
+            </div>
+          ) : (
+            <span className="editorial-chip-accent">Default view active</span>
+          )}
+        </div>
+
+        <div className="grid gap-5 lg:grid-cols-[1.35fr_0.8fr_0.8fr_auto] lg:items-end">
           <div>
-            <label className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
-              Search
-            </label>
+            <label className="editorial-field-label">Search</label>
             <input
               type="text"
               value={searchInput}
               onChange={(event) => setSearchInput(event.target.value)}
-              placeholder="Search by name or description"
-              className="mt-2 w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-sm text-walnut outline-none transition focus:border-clay"
+              placeholder="Search by product name or description"
+              className="editorial-input mt-3"
             />
           </div>
 
           <div>
-            <label className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
-              Category
-            </label>
+            <label className="editorial-field-label">Category</label>
             <select
               value={category}
               onChange={(event) => updateFilters({ category: event.target.value })}
-              className="mt-2 w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-sm text-walnut outline-none transition focus:border-clay"
+              className="editorial-select mt-3"
             >
               <option value="">All categories</option>
               {categories.map((productCategory) => (
@@ -287,15 +383,13 @@ function ProductsPage() {
           </div>
 
           <div>
-            <label className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
-              Sort
-            </label>
+            <label className="editorial-field-label">Sort</label>
             <select
               value={sort}
               onChange={(event) =>
                 updateFilters({ sort: event.target.value as ProductSort })
               }
-              className="mt-2 w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-sm text-walnut outline-none transition focus:border-clay"
+              className="editorial-select mt-3"
             >
               <option value="newest">Newest</option>
               <option value="price-asc">Price: Low to high</option>
@@ -303,23 +397,35 @@ function ProductsPage() {
             </select>
           </div>
 
-          <div className="flex items-end">
+          <div className="flex gap-3 lg:justify-end">
             <button
               type="button"
               onClick={clearFilters}
               disabled={!hasActiveFilters}
-              className="w-full rounded-full border border-stone-200 bg-white px-5 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-walnut transition hover:border-clay hover:text-clay disabled:cursor-not-allowed disabled:opacity-50"
+              className="editorial-button-secondary w-full disabled:cursor-not-allowed disabled:opacity-50 lg:w-auto"
             >
               Clear
             </button>
           </div>
         </div>
+      </section>
 
-        <div className="mt-10 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-          {products.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
+      <section className="grid gap-x-8 gap-y-10 md:grid-cols-2 xl:grid-cols-3">
+        {products.map((product, index) => (
+          <div
+            key={product.id}
+            className={
+              index % 3 === 1
+                ? 'xl:pt-14'
+                : index % 3 === 2
+                  ? 'md:pt-8 xl:pt-4'
+                  : ''
+            }
+          >
+            <ProductCard product={product} />
+          </div>
+        ))}
+      </section>
     </PageShell>
   )
 }

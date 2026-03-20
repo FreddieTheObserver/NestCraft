@@ -1,69 +1,85 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router-dom'
 
-import type { Product } from '../services/products';
+import type { Product } from '../services/products'
 
 type ProductCardProps = {
-      product: Product;
+  product: Product
 }
 
 function ProductCard({ product }: ProductCardProps) {
-      const [imageFailed, setImageFailed] = useState(false)
-      const imageUrl = product.imageUrl ?? undefined
-      const showImage = Boolean(imageUrl) && !imageFailed
+  const [imageFailed, setImageFailed] = useState(false)
+  const imageUrl = product.imageUrl ?? undefined
+  const showImage = Boolean(imageUrl) && !imageFailed
+  const stockCopy = product.stock > 0 ? `${product.stock} available` : 'Unavailable'
 
-      return (
-            <Link to={`/products/${product.slug}`} className="block">
-                  <article className="group overflow-hidden rounded-[1.75rem] border border-stone-200/80 bg-white shadow-[0_20px_60px_rgba(32,26,22,0.08)] transition-transform duration-300 hover:-translate-y-1">
-                              <div className="h-56 w-full overflow-hidden bg-gradient-to-br from-stone-100 to-stone-200 sm:h-60">
-                                    {showImage ? (
-                                          <img
-                                                src={imageUrl}
-                                                alt={product.name}
-                                                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                                onError={() => setImageFailed(true)}
-                                          />
-                                    ):(
-                                          <div className="flex h-full items-center justify-center bg-gradient-to-br from-mist to-sand px-6 text-center">
-                                                <div className="space-y-2">
-                                                      <p className="text-xs font-semibold uppercase tracking-[0.28em] text-clay/75">
-                                                            NestCraft
-                                                      </p>
-                                                      <p className="text-sm text-stone-600">
-                                                            Image preview unavailable
-                                                      </p>
-                                                </div>
-                                          </div>
-                                    )}
-                              </div>
+  return (
+    <Link to={`/products/${product.slug}`} className="group block">
+      <article className="rounded-[1.75rem] p-3 transition duration-500 group-hover:-translate-y-1">
+        <div className="overflow-hidden rounded-[1.75rem] bg-surface-low p-3 transition-colors duration-500 group-hover:bg-surface-container">
+          <div className="relative overflow-hidden rounded-[1.3rem] bg-surface-white">
+            {product.isFeatured ? (
+              <span className="editorial-chip-accent absolute left-4 top-4 z-10">
+                Featured
+              </span>
+            ) : null}
 
-                        <div className="space-y-3 p-5">
-                              <div className="flex items-start justify-between gap-3">
-                                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-clay">
-                                          {product.category.name}
-                                    </p>
-                                    {product.isFeatured ? (
-                                          <span className="rounded-full bg-clay/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-clay">
-                                                Featured
-                                          </span>
-                                    ) : null}
-                              </div>
-                              <h2 className="text-xl font-semibold leading-tight text-walnut">
-                                    {product.name}
-                              </h2>
-                              <p className="line-clamp-2 text-sm leading-6 text-stone-500">
-                                    {product.description}
-                              </p>
-                              <div className="flex items-center justify-between border-t border-stone-200 pt-4">
-                                    <p className="text-lg font-semibold text-clay">${product.price}</p>
-                                    <p className="text-sm text-stone-500">
-                                          {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
-                                    </p>
-                              </div>
-                        </div>
-                  </article>
-            </Link>
-      )
+            <div className="editorial-image-placeholder aspect-[4/5] overflow-hidden">
+              {showImage ? (
+                <img
+                  src={imageUrl}
+                  alt={product.name}
+                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+                  onError={() => setImageFailed(true)}
+                />
+              ) : (
+                <div className="flex h-full items-center justify-center px-8 text-center">
+                  <div className="space-y-3">
+                    <p className="editorial-kicker text-primary">NestCraft selection</p>
+                    <p className="text-sm leading-6 text-primary">
+                      Product photography is unavailable for this piece.
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="space-y-4 px-2 pb-2 pt-5">
+            <div className="flex items-start justify-between gap-4">
+              <p className="editorial-kicker text-primary">{product.category.name}</p>
+              <span
+                className={product.stock > 0 ? 'editorial-chip' : 'editorial-chip-accent'}
+              >
+                {stockCopy}
+              </span>
+            </div>
+
+            <div className="space-y-2">
+              <h2 className="font-display text-[1.65rem] leading-tight tracking-[-0.03em] text-ink">
+                {product.name}
+              </h2>
+              <p className="line-clamp-3 text-sm leading-6 text-primary">
+                {product.description}
+              </p>
+            </div>
+
+            <div className="grid gap-4 pt-1 sm:grid-cols-[auto_1fr] sm:items-end">
+              <div>
+                <p className="text-2xl font-bold tracking-[-0.03em] text-ink">
+                  ${product.price}
+                </p>
+                <p className="mt-1 text-sm text-primary">Selected for practical warmth</p>
+              </div>
+              <div className="flex justify-start sm:justify-end">
+                <span className="editorial-button-tertiary">View piece</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+    </Link>
+  )
 }
 
-export default ProductCard;
+export default ProductCard

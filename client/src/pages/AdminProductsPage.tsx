@@ -114,102 +114,154 @@ function AdminProductsPage() {
             )
       }
 
+      const featuredCount = products.filter((product) => product.isFeatured).length
+      const inactiveCount = products.filter((product) => !product.isActive).length
+
       return (
             <PageShell maxWidth="7xl">
-                        <div className="flex flex-col gap-4 rounded-[2rem] bg-white/80 p-8 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-                              <div>
-                                    <p className="text-sm font-semibold uppercase tracking-[0.24em] text-clay">
-                                          Admin catalog
-                                    </p>
-                                    <h1 className="mt-3 text-4xl font-semibold">Manage products</h1>
-                              </div>
+                  <section className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-end">
+                        <div className="space-y-4">
+                              <p className="editorial-kicker">Admin catalog</p>
+                              <h1 className="editorial-heading sm:text-5xl">Manage products</h1>
+                              <p className="editorial-copy max-w-2xl">
+                                    Review the live catalog, adjust merchandising flags, and keep
+                                    storefront visibility consistent with the editorial direction.
+                              </p>
+                        </div>
 
+                        <div className="flex flex-wrap items-center gap-4 lg:justify-end">
                               <Link
                                     to="/admin/products/new"
-                                    className="inline-flex items-center justify-center rounded-full bg-walnut px-5 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-clay"
+                                    className="editorial-button-primary"
                               >
                                     Create product
                               </Link>
                         </div>
+                  </section>
 
-                        {actionError ? (
-                              <StatusPanel
-                                    eyebrow="Product action failed"
-                                    title="We could not update that product."
-                                    message={actionError}
-                                    tone="error"
-                                    className="p-6"
-                              />
-                        ) : null}
+                  <section className="grid gap-4 sm:grid-cols-3">
+                        <div className="editorial-stat">
+                              <p className="editorial-kicker text-primary">Catalog total</p>
+                              <p className="mt-4 text-4xl font-bold tracking-[-0.04em] text-ink">
+                                    {products.length}
+                              </p>
+                        </div>
+                        <div className="editorial-stat">
+                              <p className="editorial-kicker text-primary">Featured</p>
+                              <p className="mt-4 text-4xl font-bold tracking-[-0.04em] text-ink">
+                                    {featuredCount}
+                              </p>
+                        </div>
+                        <div className="editorial-stat">
+                              <p className="editorial-kicker text-primary">Inactive</p>
+                              <p className="mt-4 text-4xl font-bold tracking-[-0.04em] text-ink">
+                                    {inactiveCount}
+                              </p>
+                        </div>
+                  </section>
 
-                        <div className="rounded-[2rem] border border-stone-200 bg-white shadow-sm">
-                              <div className="border-b border-stone-200 px-6 py-4 text-sm text-stone-500 xl:hidden">
-                                    Scroll horizontally to review product inventory and actions on smaller screens.
-                              </div>
-                              <div className="overflow-x-auto">
-                              <div className="min-w-[960px]">
-                              <div className="grid grid-cols-[1.6fr_0.9fr_0.8fr_0.8fr_1fr] gap-4 border-b border-stone-200 px-6 py-4 text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
-                                    <span>Product</span>
-                                    <span>Category</span>
-                                    <span>Stock</span>
-                                    <span>Status</span>
-                                    <span>Actions</span>
-                              </div>
+                  {actionError ? (
+                        <StatusPanel
+                              eyebrow="Product action failed"
+                              title="We could not update that product."
+                              message={actionError}
+                              tone="error"
+                              className="p-6"
+                        />
+                  ) : null}
 
-                              <div className="divide-y divide-stone-200">
-                                    {products.map((product) => (
-                                          <div
-                                                key={product.id}
-                                                className="grid grid-cols-[1.6fr_0.9fr_0.8fr_0.8fr_1fr] gap-4 px-6 py-5"
-                                          >
-                                                <div>
-                                                      <p className="font-semibold text-walnut">{product.name}</p>
-                                                      <p className="mt-1 text-sm text-stone-500">{product.slug}</p>
-                                                      {product.isFeatured ? (
-                                                            <span className="mt-2 inline-block rounded-full bg-clay/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-clay">
-                                                                  Featured
-                                                            </span>
-                                                      ) : null}
-                                                </div>
-
-                                                <p className="text-sm text-stone-600">{product.category.name}</p>
-                                                <p className="text-sm text-stone-600">{product.stock}</p>
-                                                <p className="text-sm font-semibold text-walnut">
-                                                      {product.isActive ? 'Active' : 'Inactive'}
-                                                </p>
-
-                                                <div className="flex flex-wrap gap-2">
-                                                      <Link
-                                                            to={`/admin/products/${product.id}/edit`}
-                                                            className="rounded-full border border-stone-200 px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-walnut"
-                                                      >
-                                                            Edit
-                                                      </Link>
-
-                                                      {product.isActive ? (
-                                                            <button
-                                                                  type="button"
-                                                                  onClick={() => void handleDeactivate(product.id)}
-                                                                  className="rounded-full border border-red-200 px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-red-500"
-                                                            >
-                                                                  Deactivate
-                                                            </button>
+                  {products.length === 0 ? (
+                        <StatusPanel
+                              eyebrow="Admin catalog"
+                              title="No products are in the catalog yet."
+                              message="Create the first product to start building the storefront assortment."
+                        />
+                  ) : (
+                        <section className="grid gap-6 lg:grid-cols-2">
+                              {products.map((product) => (
+                                    <article key={product.id} className="editorial-panel p-6 sm:p-7">
+                                          <div className="grid gap-5 sm:grid-cols-[150px_1fr]">
+                                                <div className="overflow-hidden rounded-[1.25rem] bg-surface-low">
+                                                      {product.imageUrl ? (
+                                                            <img
+                                                                  src={product.imageUrl}
+                                                                  alt={product.name}
+                                                                  className="aspect-[4/5] h-full w-full object-cover"
+                                                            />
                                                       ) : (
-                                                            <button
-                                                                  type="button"
-                                                                  onClick={() => void handleReactivate(product.id)}
-                                                                  className="rounded-full border border-emerald-200 px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-emerald-600"
-                                                            >
-                                                                  Reactivate
-                                                            </button>
+                                                            <div className="flex aspect-[4/5] items-center justify-center px-4 text-center text-xs uppercase tracking-[0.18em] text-primary">
+                                                                  No image
+                                                            </div>
                                                       )}
                                                 </div>
+
+                                                <div className="space-y-5">
+                                                      <div className="space-y-3">
+                                                            <div className="flex flex-wrap gap-3">
+                                                                  <span className="editorial-chip">{product.category.name}</span>
+                                                                  <span
+                                                                        className={product.isActive ? 'editorial-chip-accent' : 'editorial-chip'}
+                                                                  >
+                                                                        {product.isActive ? 'Active' : 'Inactive'}
+                                                                  </span>
+                                                                  {product.isFeatured ? (
+                                                                        <span className="editorial-chip-accent">Featured</span>
+                                                                  ) : null}
+                                                            </div>
+
+                                                            <h2 className="font-display text-3xl leading-tight tracking-[-0.03em] text-ink">
+                                                                  {product.name}
+                                                            </h2>
+                                                            <p className="text-sm leading-6 text-primary">{product.slug}</p>
+                                                      </div>
+
+                                                      <div className="grid gap-4 sm:grid-cols-2">
+                                                            <div className="editorial-panel-muted p-4">
+                                                                  <p className="editorial-kicker text-primary">Stock</p>
+                                                                  <p className="mt-3 text-2xl font-bold tracking-[-0.03em] text-ink">
+                                                                        {product.stock}
+                                                                  </p>
+                                                            </div>
+                                                            <div className="editorial-panel-muted p-4">
+                                                                  <p className="editorial-kicker text-primary">Price</p>
+                                                                  <p className="mt-3 text-2xl font-bold tracking-[-0.03em] text-ink">
+                                                                        ${product.price}
+                                                                  </p>
+                                                            </div>
+                                                      </div>
+
+                                                      <div className="flex flex-wrap gap-3">
+                                                            <Link
+                                                                  to={`/admin/products/${product.id}/edit`}
+                                                                  className="editorial-button-secondary"
+                                                            >
+                                                                  Edit
+                                                            </Link>
+
+                                                            {product.isActive ? (
+                                                                  <button
+                                                                        type="button"
+                                                                        onClick={() => void handleDeactivate(product.id)}
+                                                                        className="inline-flex items-center justify-center rounded-lg bg-error-soft px-5 py-3 text-sm font-semibold uppercase tracking-[0.12em] text-error transition duration-300 hover:-translate-y-0.5"
+                                                                  >
+                                                                        Deactivate
+                                                                  </button>
+                                                            ) : (
+                                                                  <button
+                                                                        type="button"
+                                                                        onClick={() => void handleReactivate(product.id)}
+                                                                        className="inline-flex items-center justify-center rounded-lg bg-secondary/10 px-5 py-3 text-sm font-semibold uppercase tracking-[0.12em] text-secondary transition duration-300 hover:-translate-y-0.5"
+                                                                  >
+                                                                        Reactivate
+                                                                  </button>
+                                                            )}
+                                                      </div>
+                                                </div>
                                           </div>
-                                    ))}
-                              </div>
-                              </div>
-                              </div>
-                        </div>
+                                    </article>
+                              ))}
+                        </section>
+                  )}
             </PageShell>
       )
 }

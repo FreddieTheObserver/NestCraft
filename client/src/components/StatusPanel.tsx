@@ -15,23 +15,20 @@ function StatusPanel({
   children,
   className = '',
 }: StatusPanelProps) {
-  const panelClassName =
+  const toneClassName =
     tone === 'error'
-      ? 'border border-red-200 bg-white'
-      : 'bg-white'
+      ? 'editorial-status-error text-error'
+      : 'editorial-panel-muted'
 
-  const eyebrowClassName =
-    tone === 'error'
-      ? 'text-red-500'
-      : 'text-clay'
+  const eyebrowClassName = tone === 'error' ? 'text-error' : 'text-primary'
 
   return (
-    <div className={`rounded-[2rem] p-8 shadow-sm ${panelClassName} ${className}`.trim()}>
-      <p className={`text-sm font-semibold uppercase tracking-[0.24em] ${eyebrowClassName}`}>
+    <div className={`rounded-xl px-7 py-8 shadow-ambient ${toneClassName} ${className}`.trim()}>
+      <p className={`text-[0.72rem] font-bold uppercase tracking-[0.28em] ${eyebrowClassName}`}>
         {eyebrow}
       </p>
-      <h1 className="mt-4 text-3xl font-semibold sm:text-4xl">{title}</h1>
-      {message ? <p className="mt-3 text-stone-600">{message}</p> : null}
+      <h1 className="editorial-heading mt-4 max-w-3xl">{title}</h1>
+      {message ? <p className="editorial-copy mt-4 max-w-2xl">{message}</p> : null}
       {children}
     </div>
   )
