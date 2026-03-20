@@ -3,3 +3,4 @@ client/.env.local
 client/.env.*.local
 server/.env
 AGENT.md
+server/uploads
