@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useState } from "react";
 
 import {
       loginUser,
@@ -10,34 +10,64 @@ import {
 
 type AuthContextValue = {
       user: AuthUser | null
-      token: string 
-      isAuthenticated: boolean 
+      token: string
+      isAuthenticated: boolean
       login: (data: LoginInput) => Promise<void>
       register: (data: RegisterInput) => Promise<void>
       logout: () => void
 }
 
+type StoredAuthState = {
+      user: AuthUser | null
+      token: string
+}
+
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
+function readStoredAuth(): StoredAuthState {
+      if (typeof window === 'undefined') {
+            return {
+                  user: null,
+                  token: '',
+            };
+      }
+
+      const storedUser = window.localStorage.getItem('auth_user');
+      const storedToken = window.localStorage.getItem('auth_token');
+
+      if (!storedUser || !storedToken) {
+            return {
+                  user: null,
+                  token: '',
+            };
+      }
+
+      try {
+            return {
+                  user: JSON.parse(storedUser) as AuthUser,
+                  token: storedToken,
+            };
+      } catch {
+            window.localStorage.removeItem('auth_user');
+            window.localStorage.removeItem('auth_token');
+
+            return {
+                  user: null,
+                  token: '',
+            };
+      }
+}
+
 function AuthProvider({ children }: { children: React.ReactNode }) {
-      const [user, setUser] = useState<AuthUser | null>(null);
-      const [token, setToken] = useState("");
-
-      useEffect(() => {
-            const storedUser = localStorage.getItem('auth_user');
-            const storedToken = localStorage.getItem('auth_token');
-
-            if (storedUser && storedToken) {
-                  setUser(JSON.parse(storedUser));
-                  setToken(storedToken);
-            }
-      }, []);
+      const [{ user, token }, setAuthState] = useState<StoredAuthState>(readStoredAuth);
 
       async function login(data: LoginInput) {
             const result = await loginUser(data);
 
-            setUser(result.user);
-            setToken(result.token);
+            setAuthState({
+                  user: result.user,
+                  token: result.token,
+            });
 
             localStorage.setItem('auth_user', JSON.stringify(result.user));
             localStorage.setItem('auth_token', result.token);
@@ -46,16 +76,20 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
       async function register(data: RegisterInput) {
             const result = await registerUser(data);
 
-            setUser(result.user);
-            setToken(result.token);
+            setAuthState({
+                  user: result.user,
+                  token: result.token,
+            });
 
             localStorage.setItem('auth_user', JSON.stringify(result.user));  
             localStorage.setItem('auth_token', result.token);  
       }
 
       function logout() {
-            setUser(null);
-            setToken("");
+            setAuthState({
+                  user: null,
+                  token: '',
+            });
 
             localStorage.removeItem('auth_user');
             localStorage.removeItem('auth_token');
