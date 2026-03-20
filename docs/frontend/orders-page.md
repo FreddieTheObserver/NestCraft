@@ -29,10 +29,15 @@ This page is the first real account-facing screen built on top of:
 - [OrdersPage.tsx](c:/Users/user/NestCraft/client/src/pages/OrdersPage.tsx)
 - [OrderDetailPage.tsx](c:/Users/user/NestCraft/client/src/pages/OrderDetailPage.tsx)
 - [orders.ts](c:/Users/user/NestCraft/client/src/services/orders.ts)
+- [orderStream.ts](c:/Users/user/NestCraft/client/src/services/orderStream.ts)
 - [index.tsx](c:/Users/user/NestCraft/client/src/routes/index.tsx)
 - [StoreHeader.tsx](c:/Users/user/NestCraft/client/src/components/StoreHeader.tsx)
 - [AuthContext.tsx](c:/Users/user/NestCraft/client/src/context/AuthContext.tsx)
 - [ProtectedRoute.tsx](c:/Users/user/NestCraft/client/src/components/ProtectedRoute.tsx)
+
+Related implementation note:
+
+- [order-live-updates.md](c:/Users/user/NestCraft/docs/frontend/order-live-updates.md)
 
 ## Why The Page Exists
 
@@ -70,13 +75,33 @@ The page works in this sequence:
 4. `getMyOrders(token)` in [orders.ts](c:/Users/user/NestCraft/client/src/services/orders.ts) sends `GET /api/orders/me`
 5. backend verifies the bearer token and returns only that user's orders
 6. React stores the result in local state and renders the page
+7. the page also opens the live order stream and refetches when order events arrive
 
 This keeps responsibilities clean:
 
 - route protection stays in `ProtectedRoute`
 - token ownership stays in auth context
 - network code stays in `services/orders.ts`
+- stream transport stays in `services/orderStream.ts`
 - UI stays in `OrdersPage.tsx`
+
+## Live Update Behavior
+
+After the initial load, the page subscribes to the authenticated order stream.
+
+Current behavior:
+
+- new order creation triggers a list refetch
+- order status changes trigger a list refetch
+
+The page chooses refetching instead of patching local list state because these events can affect:
+
+- order count
+- pending count
+- total spent
+- newest-first ordering
+
+For the full stream design, read [order-live-updates.md](c:/Users/user/NestCraft/docs/frontend/order-live-updates.md).
 
 ## Why The Orders Service Exists
 
@@ -239,5 +264,6 @@ This page is complete enough for the current stage when:
 The next useful improvements after this page are:
 
 - customer account dashboard
+- stronger user-facing live-connection status if realtime behavior becomes more important
 - order-status timeline or richer delivery progress
 - account-area polish and grouping for larger order histories

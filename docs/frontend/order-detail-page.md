@@ -28,12 +28,17 @@ This page is the drill-down view for the customer order flow.
 
 - [OrderDetailPage.tsx](c:/Users/user/NestCraft/client/src/pages/OrderDetailPage.tsx)
 - [orders.ts](c:/Users/user/NestCraft/client/src/services/orders.ts)
+- [orderStream.ts](c:/Users/user/NestCraft/client/src/services/orderStream.ts)
 - [index.tsx](c:/Users/user/NestCraft/client/src/routes/index.tsx)
 - [OrdersPage.tsx](c:/Users/user/NestCraft/client/src/pages/OrdersPage.tsx)
 - [CheckoutPage.tsx](c:/Users/user/NestCraft/client/src/pages/CheckoutPage.tsx)
 - [ProtectedRoute.tsx](c:/Users/user/NestCraft/client/src/components/ProtectedRoute.tsx)
 - [AuthContext.tsx](c:/Users/user/NestCraft/client/src/context/AuthContext.tsx)
 - [StoreHeader.tsx](c:/Users/user/NestCraft/client/src/components/StoreHeader.tsx)
+
+Related implementation note:
+
+- [order-live-updates.md](c:/Users/user/NestCraft/docs/frontend/order-live-updates.md)
 
 ## Why This Page Exists
 
@@ -87,12 +92,28 @@ The page works in this sequence:
 5. `getMyOrderByOrderNumber(orderNumber, token)` in [orders.ts](c:/Users/user/NestCraft/client/src/services/orders.ts) sends `GET /api/orders/:orderNumber`
 6. the backend returns the matching owned order or an error
 7. the page renders loading, error, or success UI
+8. the page also listens to the live order stream and patches the current status when that same order is updated
 
 This keeps responsibilities clean:
 
 - auth state stays in context
 - network code stays in the service file
+- stream transport stays in the shared order stream service
 - order-detail UI stays in the page
+
+## Live Status Behavior
+
+The page no longer depends only on the initial fetch.
+
+While the route remains open, it subscribes to the authenticated order stream and watches for:
+
+- `order.updated`
+
+If the event's `orderNumber` matches the current route param, the page updates `order.status` in local state immediately.
+
+That gives the customer live feedback when an admin changes the order state while the detail screen is open.
+
+For the full transport and reconnect behavior, read [order-live-updates.md](c:/Users/user/NestCraft/docs/frontend/order-live-updates.md).
 
 ## State Handling
 
@@ -172,5 +193,6 @@ The app now supports:
 - customer-facing order numbers
 - purchase history
 - direct order detail drill-down
+- live status freshness while an order detail screen stays open
 
 That is a much more complete ecommerce account flow than a list-only history screen.

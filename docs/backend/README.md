@@ -6,6 +6,7 @@ Current documents:
 
 - [admin-read-endpoints.md](c:/Users/user/NestCraft/docs/backend/admin-read-endpoints.md)
 - [admin-orders-backend.md](c:/Users/user/NestCraft/docs/backend/admin-orders-backend.md)
+- [order-live-updates.md](c:/Users/user/NestCraft/docs/backend/order-live-updates.md)
 - [order-status-enum.md](c:/Users/user/NestCraft/docs/backend/order-status-enum.md)
 - [auth-backend.md](c:/Users/user/NestCraft/docs/backend/auth-backend.md)
 - [admin-product-endpoints.md](c:/Users/user/NestCraft/docs/backend/admin-product-endpoints.md)

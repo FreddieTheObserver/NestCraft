@@ -72,6 +72,7 @@ Database model context:
 Related implementation note:
 
 - [order-status-enum.md](c:/Users/user/NestCraft/docs/backend/order-status-enum.md)
+- [order-live-updates.md](c:/Users/user/NestCraft/docs/backend/order-live-updates.md)
 
 ## Why Admin Orders Need Separate Endpoints
 
@@ -311,8 +312,11 @@ Its job is to:
 - verify the order exists
 - update the `status`
 - return the updated order with related data
+- publish an `order.updated` event after the database write succeeds
 
 That means the frontend can update local state immediately after the request without making a second fetch if it does not want to.
+
+The event publication is what allows already-open customer and admin screens to refresh through the live order stream.
 
 ### Response Shape
 
@@ -485,4 +489,5 @@ The next likely backend follow-ups, if needed later, are:
 
 - admin-side order detail reads
 - admin filtering by status or date
+- shared broker-backed delivery if live updates ever need to span multiple backend instances
 - richer operational workflow states beyond `pending`, `confirmed`, and `cancelled`

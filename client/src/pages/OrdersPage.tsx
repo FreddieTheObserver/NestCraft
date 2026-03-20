@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useEffectEvent, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import PageShell from '../components/PageShell'
 import StatusPanel from '../components/StatusPanel'
 import { useAuth } from '../context/AuthContext'
+import { subscribeToOrderStream } from '../services/orderStream'
 import { getMyOrders, type OrderResponse } from '../services/orders'
 
 const statusCopy = {
@@ -24,45 +25,48 @@ function OrdersPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  useEffect(() => {
-    let cancelled = false
-
-    async function loadOrders() {
-      if (!token) {
-        setError('You must be logged in to view your orders.')
-        setLoading(false)
-        return
-      }
-
-      try {
-        setLoading(true)
-        setError('')
-
-        const data = await getMyOrders(token)
-
-        if (!cancelled) {
-          setOrders(data)
-        }
-      } catch (loadError) {
-        if (!cancelled) {
-          setError(
-            loadError instanceof Error
-              ? loadError.message
-              : 'Failed to load your orders.',
-          )
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false)
-        }
-      }
+  const loadOrders = useEffectEvent(async () => {
+    if (!token) {
+      setOrders([])
+      setError('You must be logged in to view your orders.')
+      setLoading(false)
+      return
     }
 
+    try {
+      setLoading(true)
+      setError('')
+
+      const data = await getMyOrders(token)
+
+      setOrders(data)
+    } catch (loadError) {
+      setError(
+        loadError instanceof Error
+          ? loadError.message
+          : 'Failed to load your orders.',
+      )
+    } finally {
+      setLoading(false)
+    }
+  })
+
+  useEffect(() => {
     void loadOrders()
 
-    return () => {
-      cancelled = true
+    if (!token) {
+      return
     }
+
+    return subscribeToOrderStream({
+      token,
+      onEvent() {
+        void loadOrders()
+      },
+      onError(streamError) {
+        console.error('Order stream disconnected:', streamError)
+      },
+    })
   }, [token])
 
   if (loading) {

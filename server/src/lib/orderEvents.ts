@@ -1,6 +1,5 @@
 import { randomUUID } from 'node:crypto';
 import type { OrderStatus } from '../generated/prisma/client.js';
-import { OrderSelect } from '../generated/prisma/models.js';
 
 type UserRole = 'customer' | 'admin';
 
@@ -39,13 +38,13 @@ export function subscribeOrderEvents(subscriber: Omit<Subscriber, 'id'>) {
       }
 }
 
-function canRecieveEvent(subscriber: Subscriber, event: OrderStreamEvent) {
+function canReceiveEvent(subscriber: Subscriber, event: OrderStreamEvent) {
       return subscriber.role === 'admin' || subscriber.userId === event.userId
 }
 
 function broadcastEvent(event: OrderStreamEvent) {
       for (const subscriber of subscribers.values()) {
-            if (!canRecieveEvent(subscriber, event)) {
+            if (!canReceiveEvent(subscriber, event)) {
                   continue
             }
 

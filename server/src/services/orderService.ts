@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 
 import { prisma } from '../lib/prisma.js';
+import { broadcastOrderCreated, broadcastOrderUpdated } from '../lib/orderEvents.js';
 import type { OrderStatus } from '../generated/prisma/client.js';
 
 type OrderItemInput = {
@@ -59,7 +60,7 @@ export async function createOrder(data: CreateOrderInput) {
 
       const productIds = data.items.map((item) => item.productId);
 
-      return prisma.$transaction(async (tx) => {
+      const order = await prisma.$transaction(async (tx) => {
             const products = await tx.product.findMany({
                   where: {
                         id: { in: productIds },
@@ -153,6 +154,10 @@ export async function createOrder(data: CreateOrderInput) {
 
             return order;
       });
+
+      broadcastOrderCreated(order.orderNumber, order.userId);
+
+      return order;
 }
 
 export async function getAllOrdersForAdmin() {
@@ -194,7 +199,7 @@ export async function updateOrderStatus(id: number, status: OrderStatus) {
             throw new Error("ORDER_NOT_FOUND");
       }
 
-      return prisma.order.update({
+      const order = await prisma.order.update({
             where: { id },
             data: { status },
             include: {
@@ -220,6 +225,10 @@ export async function updateOrderStatus(id: number, status: OrderStatus) {
                   },
             },
       });
+
+      broadcastOrderUpdated(order.orderNumber, order.userId, order.status);
+
+      return order;
 }
 
 export async function getOrderByOrderNumberForUser(

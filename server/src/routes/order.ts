@@ -8,11 +8,13 @@ import {
       getMyOrderByOrderNumberHandler,
       getMyOrdersHandler,
 } from '../controllers/orderController.js';
+import { streamOrderEventsHandler } from '../controllers/orderStreamController.js';
 import { requireAuth } from '../middleware/authMiddleware.js';
 
 const orderRouter = Router();
 
 orderRouter.get("/me", requireAuth, getMyOrdersHandler);
+orderRouter.get("/stream", requireAuth, streamOrderEventsHandler);
 
 orderRouter.get(
       "/:orderNumber",

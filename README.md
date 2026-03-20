@@ -11,6 +11,7 @@ The project currently includes:
 - protected checkout flow
 - order creation, order history, and order detail
 - customer-facing order numbers
+- authenticated live order updates across customer and admin screens
 - backend validation and role-aware authorization
 - admin-only backend product write endpoints
 - frontend admin product management
@@ -56,8 +57,10 @@ Implemented:
 - `POST /api/orders`
 - `GET /api/orders/me`
 - `GET /api/orders/:orderNumber`
+- `GET /api/orders/stream`
 - order detail page
 - customer-facing order numbers
+- fetch-stream based live order subscriptions in the client
 - `GET /api/admin/orders`
 - `PATCH /api/admin/orders/:id/status`
 - backend request validation
@@ -208,6 +211,7 @@ Authenticated:
 - `POST /api/orders`
 - `GET /api/orders/me`
 - `GET /api/orders/:orderNumber`
+- `GET /api/orders/stream`
 
 Admin-only:
 
@@ -231,6 +235,7 @@ Backend notes:
 - [README.md](c:/Users/user/NestCraft/docs/backend/README.md)
 - [admin-read-endpoints.md](c:/Users/user/NestCraft/docs/backend/admin-read-endpoints.md)
 - [admin-orders-backend.md](c:/Users/user/NestCraft/docs/backend/admin-orders-backend.md)
+- [order-live-updates.md](c:/Users/user/NestCraft/docs/backend/order-live-updates.md)
 - [order-status-enum.md](c:/Users/user/NestCraft/docs/backend/order-status-enum.md)
 - [database-setup-and-seeding.md](c:/Users/user/NestCraft/docs/backend/database-setup-and-seeding.md)
 - [products-api.md](c:/Users/user/NestCraft/docs/backend/products-api.md)
@@ -247,6 +252,7 @@ Frontend notes:
 - [README.md](c:/Users/user/NestCraft/docs/frontend/README.md)
 - [admin-orders-ui.md](c:/Users/user/NestCraft/docs/frontend/admin-orders-ui.md)
 - [admin-products-ui.md](c:/Users/user/NestCraft/docs/frontend/admin-products-ui.md)
+- [order-live-updates.md](c:/Users/user/NestCraft/docs/frontend/order-live-updates.md)
 - [api-integration.md](c:/Users/user/NestCraft/docs/frontend/api-integration.md)
 - [api-error-handling.md](c:/Users/user/NestCraft/docs/frontend/api-error-handling.md)
 - [ui-foundations.md](c:/Users/user/NestCraft/docs/frontend/ui-foundations.md)

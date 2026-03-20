@@ -54,6 +54,7 @@ Service layer:
 
 - [adminOrders.ts](c:/Users/user/NestCraft/client/src/services/adminOrders.ts)
 - [orders.ts](c:/Users/user/NestCraft/client/src/services/orders.ts)
+- [orderStream.ts](c:/Users/user/NestCraft/client/src/services/orderStream.ts)
 
 Page:
 
@@ -66,6 +67,10 @@ Shared app wiring:
 - [StatusPanel.tsx](c:/Users/user/NestCraft/client/src/components/StatusPanel.tsx)
 - [StoreHeader.tsx](c:/Users/user/NestCraft/client/src/components/StoreHeader.tsx)
 - [AuthContext.tsx](c:/Users/user/NestCraft/client/src/context/AuthContext.tsx)
+
+Related implementation note:
+
+- [order-live-updates.md](c:/Users/user/NestCraft/docs/frontend/order-live-updates.md)
 
 ## Route Protection
 
@@ -324,6 +329,26 @@ This matters because the page does not need to refetch the entire order list aft
 
 That keeps the UI simpler and avoids unnecessary extra network traffic.
 
+## Live Queue Refresh Behavior
+
+The page now also subscribes to the authenticated order stream.
+
+That gives the admin screen cross-session freshness for:
+
+- new orders created by customers
+- status changes made from another admin session
+
+When a stream event arrives, the page refetches the full admin order list.
+
+That is the correct choice for this screen because one event can affect:
+
+- list contents
+- queue counts
+- gross order value
+- individual row status
+
+For the full stream transport and reconnect details, read [order-live-updates.md](c:/Users/user/NestCraft/docs/frontend/order-live-updates.md).
+
 ## Why `updatingId` Exists
 
 The page stores `updatingId` so the currently edited order's status control can be disabled while the request is in flight.
@@ -405,6 +430,7 @@ At this point, the project now supports:
 - customers browsing and ordering
 - admins managing the catalog
 - admins managing incoming orders
+- live order freshness across multiple open customer and admin sessions
 
 That is the core operational loop of a basic ecommerce system.
 

@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useEffectEvent, useState } from 'react'
 
 import PageShell from '../components/PageShell'
 import StatusPanel from '../components/StatusPanel'
 import { useAuth } from '../context/AuthContext'
+import { subscribeToOrderStream } from '../services/orderStream'
 import {
   getAdminOrders,
   updateAdminOrderStatus,
@@ -29,39 +30,48 @@ function AdminOrdersPage() {
   const [error, setError] = useState('')
   const [updatingId, setUpdatingId] = useState<number | null>(null)
 
-  useEffect(() => {
-    let cancelled = false
-
-    async function loadOrders() {
-      try {
-        setLoading(true)
-        setError('')
-
-        const data = await getAdminOrders(token)
-
-        if (!cancelled) {
-          setOrders(data)
-        }
-      } catch (loadError) {
-        if (!cancelled) {
-          setError(
-            loadError instanceof Error
-              ? loadError.message
-              : 'Failed to fetch admin orders',
-          )
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false)
-        }
-      }
+  const loadOrders = useEffectEvent(async () => {
+    if (!token) {
+      setOrders([])
+      setError('You must be logged in to manage orders.')
+      setLoading(false)
+      return
     }
 
+    try {
+      setLoading(true)
+      setError('')
+
+      const data = await getAdminOrders(token)
+
+      setOrders(data)
+    } catch (loadError) {
+      setError(
+        loadError instanceof Error
+          ? loadError.message
+          : 'Failed to fetch admin orders',
+      )
+    } finally {
+      setLoading(false)
+    }
+  })
+
+  useEffect(() => {
     void loadOrders()
 
-    return () => {
-      cancelled = true
+    if (!token) {
+      return
     }
+
+    return subscribeToOrderStream({
+      token,
+      onEvent() {
+        void loadOrders()
+      },
+      onError(streamError) {
+        console.error('Admin order stream disconnected:', streamError)
+      },
+    })
   }, [token])
 
   async function handleStatusChange(id: number, status: OrderStatus) {

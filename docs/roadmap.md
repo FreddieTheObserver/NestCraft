@@ -33,8 +33,10 @@ These slices are already implemented:
   - `GET /api/orders/me`
   - orders page
   - `GET /api/orders/:orderNumber`
+  - `GET /api/orders/stream`
   - order detail page
   - customer-facing order numbers
+  - live order freshness across customer and admin screens
 - backend hardening
   - route-level validation
   - shared API error shape

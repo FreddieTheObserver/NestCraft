@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useEffectEvent, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
 import PageShell from '../components/PageShell'
 import StatusPanel from '../components/StatusPanel'
 import { useAuth } from '../context/AuthContext'
+import { subscribeToOrderStream } from '../services/orderStream'
 import { getMyOrderByOrderNumber, type OrderResponse } from '../services/orders'
 
 const statusCopy = {
@@ -26,47 +27,65 @@ function OrderDetailPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
+  const loadOrder = useEffectEvent(async () => {
+    if (!token) {
+      setOrder(null)
+      setError('You must be logged in to view this order.')
+      setLoading(false)
+      return
+    }
+
+    if (!orderNumber) {
+      setOrder(null)
+      setError('Order number is missing.')
+      setLoading(false)
+      return
+    }
+
+    try {
+      setLoading(true)
+      setError('')
+
+      const data = await getMyOrderByOrderNumber(orderNumber, token)
+
+      setOrder(data)
+    } catch (loadError) {
+      setOrder(null)
+      setError(loadError instanceof Error ? loadError.message : 'Failed to load order.')
+    } finally {
+      setLoading(false)
+    }
+  })
+
   useEffect(() => {
-    let cancelled = false
-
-    async function loadOrder() {
-      if (!token) {
-        setError('You must be logged in to view this order.')
-        setLoading(false)
-        return
-      }
-
-      if (!orderNumber) {
-        setError('Order number is missing.')
-        setLoading(false)
-        return
-      }
-
-      try {
-        setLoading(true)
-        setError('')
-
-        const data = await getMyOrderByOrderNumber(orderNumber, token)
-
-        if (!cancelled) {
-          setOrder(data)
-        }
-      } catch (loadError) {
-        if (!cancelled) {
-          setError(loadError instanceof Error ? loadError.message : 'Failed to load order.')
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false)
-        }
-      }
-    }
-
     void loadOrder()
+  }, [orderNumber, token])
 
-    return () => {
-      cancelled = true
+  useEffect(() => {
+    if (!token || !orderNumber) {
+      return
     }
+
+    return subscribeToOrderStream({
+      token,
+      onEvent(event) {
+        if (event.type !== 'order.updated' || event.orderNumber !== orderNumber) {
+          return
+        }
+
+        setOrder((currentOrder) =>
+          currentOrder
+            ? {
+                ...currentOrder,
+                status: event.status,
+              }
+            : currentOrder,
+        )
+      },
+      onError(streamError) {
+        console.error('Order detail stream disconnected:', streamError)
+      },
+    })
   }, [orderNumber, token])
 
   if (loading) {

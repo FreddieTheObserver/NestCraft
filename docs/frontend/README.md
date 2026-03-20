@@ -6,6 +6,7 @@ Current documents:
 
 - [admin-orders-ui.md](c:/Users/user/NestCraft/docs/frontend/admin-orders-ui.md)
 - [admin-products-ui.md](c:/Users/user/NestCraft/docs/frontend/admin-products-ui.md)
+- [order-live-updates.md](c:/Users/user/NestCraft/docs/frontend/order-live-updates.md)
 - [api-integration.md](c:/Users/user/NestCraft/docs/frontend/api-integration.md)
 - [api-error-handling.md](c:/Users/user/NestCraft/docs/frontend/api-error-handling.md)
 - [ui-foundations.md](c:/Users/user/NestCraft/docs/frontend/ui-foundations.md)
