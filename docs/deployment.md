@@ -38,6 +38,7 @@ Frontend runtime:
 
 - [vite.config.ts](c:/Users/user/NestCraft/client/vite.config.ts)
 - [api.ts](c:/Users/user/NestCraft/client/src/utils/api.ts)
+- [images.ts](c:/Users/user/NestCraft/client/src/utils/images.ts)
 - [auth.ts](c:/Users/user/NestCraft/client/src/services/auth.ts)
 - [products.ts](c:/Users/user/NestCraft/client/src/services/products.ts)
 - [orders.ts](c:/Users/user/NestCraft/client/src/services/orders.ts)
@@ -50,6 +51,8 @@ Backend runtime:
 
 - [env.ts](c:/Users/user/NestCraft/server/src/config/env.ts)
 - [app.ts](c:/Users/user/NestCraft/server/src/app.ts)
+- [uploads.ts](c:/Users/user/NestCraft/server/src/config/uploads.ts)
+- [upload.ts](c:/Users/user/NestCraft/server/src/routes/upload.ts)
 - [server/.env.example](c:/Users/user/NestCraft/server/.env.example)
 
 UI polish:
@@ -140,6 +143,42 @@ CLIENT_ORIGIN=http://localhost:5173
 ```env
 CLIENT_ORIGIN=http://localhost:5173,https://nestcraft.example.com
 ```
+
+## Uploaded Media Contract
+
+Product image uploads now use backend-served API paths such as:
+
+```text
+/api/uploads/products/example.jpg
+```
+
+This works with the current runtime contract because:
+
+- local Vite already proxies `/api`
+- deployed clients can resolve API paths through `buildApiUrl(...)`
+- the backend serves uploaded files from `express.static(...)`
+
+The corresponding admin-only write route is:
+
+```http
+POST /api/uploads/products
+```
+
+## Persistent Storage Warning
+
+Uploaded product images currently live on the backend filesystem under:
+
+```text
+server/uploads/products/
+```
+
+That is acceptable for local development and simple single-server setups, but it creates a real deployment constraint:
+
+- if the backend filesystem is ephemeral, uploaded files may disappear during redeploys or restarts
+
+For a production-grade hosted deployment, persistent object storage is the more durable long-term choice.
+
+The current implementation still keeps that future migration manageable because the frontend only depends on receiving an `imageUrl` string.
 
 ## CORS Behavior
 
@@ -263,6 +302,7 @@ Before calling the project deploy-ready, verify:
 - the frontend can load products with local Vite proxying
 - authenticated flows still work with `Authorization` headers
 - admin pages still work through the centralized `apiFetch`
+- uploaded product images are reachable through `/api/uploads/...`
 - the backend refuses startup when `DATABASE_URL` or `JWT_SECRET` is missing
 - browser requests from a disallowed origin are rejected by CORS
 - the client works with either blank `VITE_API_BASE_URL` or a real API origin

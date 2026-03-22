@@ -1,3 +1,5 @@
+/* eslint-disable react-refresh/only-export-components */
+
 import { createContext, useContext, useEffect, useState } from 'react';
 
 type CartItem = {
@@ -23,16 +25,22 @@ type CartContextValue = {
 
 const CartContext = createContext<CartContextValue | undefined>(undefined);
 
+function readStoredCart(): CartItem[] {
+      if (typeof window === 'undefined') {
+            return [];
+      }
+
+      try {
+            const storedCart = window.localStorage.getItem('cart');
+            return storedCart ? (JSON.parse(storedCart) as CartItem[]) : [];
+      } catch {
+            window.localStorage.removeItem('cart');
+            return [];
+      }
+}
+
 function CartProvider({ children }: {children: React.ReactNode }) {
-      const[items, setItems] = useState<CartItem[]>([]);
-
-      useEffect(() => {
-            const storedCart = localStorage.getItem('cart');
-
-            if (storedCart) {
-                  setItems(JSON.parse(storedCart));
-            }
-      }, []);
+      const[items, setItems] = useState<CartItem[]>(readStoredCart);
       
       useEffect(() => {
             localStorage.setItem('cart', JSON.stringify(items));

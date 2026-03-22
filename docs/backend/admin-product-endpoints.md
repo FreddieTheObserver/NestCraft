@@ -9,6 +9,7 @@ Allow administrators to create products, update products, and hide products from
 Current endpoints:
 
 ```http
+POST /api/uploads/products
 POST /api/products
 PATCH /api/products/:id
 PATCH /api/products/:id/deactivate
@@ -32,6 +33,10 @@ These endpoints are the first backend step toward a usable admin panel.
 - [productController.ts](c:/Users/user/NestCraft/server/src/controllers/productController.ts)
 - [productService.ts](c:/Users/user/NestCraft/server/src/services/productService.ts)
 - [productSchemas.ts](c:/Users/user/NestCraft/server/src/validation/productSchemas.ts)
+- [upload.ts](c:/Users/user/NestCraft/server/src/routes/upload.ts)
+- [uploadController.ts](c:/Users/user/NestCraft/server/src/controllers/uploadController.ts)
+- [productImageUpload.ts](c:/Users/user/NestCraft/server/src/middleware/productImageUpload.ts)
+- [uploads.ts](c:/Users/user/NestCraft/server/src/config/uploads.ts)
 - [authMiddleware.ts](c:/Users/user/NestCraft/server/src/middleware/authMiddleware.ts)
 - [validate.ts](c:/Users/user/NestCraft/server/src/middleware/validate.ts)
 - [http.ts](c:/Users/user/NestCraft/server/src/utils/http.ts)
@@ -173,7 +178,9 @@ Checks:
 - `description` has minimum length
 - `price` is positive
 - `stock` is a non-negative integer
-- `imageUrl` is a valid URL if provided
+- `imageUrl` may be either:
+- an uploaded image path beginning with `/api/uploads/`
+- a full external URL kept for backward compatibility
 - `categoryId` is a positive integer
 
 This route expects a complete create payload.
@@ -219,6 +226,25 @@ It does not own:
 - product existence checks
 
 That logic lives in the service layer.
+
+## Product Image Uploads
+
+Image management now has a dedicated first step:
+
+```http
+POST /api/uploads/products
+```
+
+That route:
+
+- requires an authenticated admin
+- accepts `multipart/form-data`
+- stores the file on disk
+- returns an `imageUrl` string shaped like `/api/uploads/products/<filename>`
+
+The returned path is then used in the existing create and update product payloads.
+
+For the full upload-specific backend documentation, see [product-image-uploads.md](c:/Users/user/NestCraft/docs/backend/product-image-uploads.md).
 
 ## Service Responsibilities
 
@@ -343,7 +369,7 @@ Content-Type: application/json
   "description": "A slim walnut console table for entryways and living rooms.",
   "price": 129.99,
   "stock": 8,
-  "imageUrl": "https://example.com/table.jpg",
+  "imageUrl": "/api/uploads/products/1711111111111-uuid-walnut-console-table.jpg",
   "categoryId": 2,
   "isFeatured": true,
   "isActive": true
@@ -391,6 +417,7 @@ Authorization: Bearer <admin-token>
 
 Minimum backend test matrix:
 
+- admin can upload a product image
 - admin can create a product
 - admin can update a product
 - admin can deactivate a product
@@ -405,6 +432,7 @@ Minimum backend test matrix:
 
 This feature is working correctly when:
 
+- admins can upload product imagery through the backend before saving product JSON
 - admins can maintain the catalog through the API
 - public users cannot access write operations
 - deactivated products stop appearing in public catalog reads because those reads filter on `isActive: true`

@@ -15,6 +15,7 @@ The project currently includes:
 - backend validation and role-aware authorization
 - admin-only backend product write endpoints
 - frontend admin product management
+- admin product image uploads
 - backend admin order management
 - frontend admin order management
 - browse/search/filter improvements
@@ -68,6 +69,7 @@ Implemented:
 - `requireAdmin`
 - admin-only backend product endpoints
 - frontend admin products UI
+- admin product image uploads
 - frontend admin orders UI
 - products page search/category/sort controls
 - Prisma enum-backed order status
@@ -217,6 +219,7 @@ Admin-only:
 
 - `GET /api/admin/products`
 - `GET /api/admin/orders`
+- `POST /api/uploads/products`
 - `POST /api/products`
 - `PATCH /api/products/:id`
 - `PATCH /api/products/:id/deactivate`
@@ -246,12 +249,14 @@ Backend notes:
 - [order-detail-api.md](c:/Users/user/NestCraft/docs/backend/order-detail-api.md)
 - [request-validation-and-authorization.md](c:/Users/user/NestCraft/docs/backend/request-validation-and-authorization.md)
 - [admin-product-endpoints.md](c:/Users/user/NestCraft/docs/backend/admin-product-endpoints.md)
+- [product-image-uploads.md](c:/Users/user/NestCraft/docs/backend/product-image-uploads.md)
 
 Frontend notes:
 
 - [README.md](c:/Users/user/NestCraft/docs/frontend/README.md)
 - [admin-orders-ui.md](c:/Users/user/NestCraft/docs/frontend/admin-orders-ui.md)
 - [admin-products-ui.md](c:/Users/user/NestCraft/docs/frontend/admin-products-ui.md)
+- [product-image-upload-ui.md](c:/Users/user/NestCraft/docs/frontend/product-image-upload-ui.md)
 - [order-live-updates.md](c:/Users/user/NestCraft/docs/frontend/order-live-updates.md)
 - [api-integration.md](c:/Users/user/NestCraft/docs/frontend/api-integration.md)
 - [api-error-handling.md](c:/Users/user/NestCraft/docs/frontend/api-error-handling.md)
@@ -274,6 +279,7 @@ Frontend notes:
 - Reactivation currently happens through the generic update endpoint by sending `{ "isActive": true }`.
 - Public catalog browsing now uses query params for `search`, `category`, and `sort`.
 - Client API requests now flow through shared `buildApiUrl()` and `apiFetch()` helpers.
+- Uploaded product images currently live under `server/uploads` and are served back through `/api/uploads/...`.
 
 ## Current Workflow Recommendation
 

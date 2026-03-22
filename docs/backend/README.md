@@ -10,6 +10,7 @@ Current documents:
 - [order-status-enum.md](c:/Users/user/NestCraft/docs/backend/order-status-enum.md)
 - [auth-backend.md](c:/Users/user/NestCraft/docs/backend/auth-backend.md)
 - [admin-product-endpoints.md](c:/Users/user/NestCraft/docs/backend/admin-product-endpoints.md)
+- [product-image-uploads.md](c:/Users/user/NestCraft/docs/backend/product-image-uploads.md)
 - [checkout-order-endpoint.md](c:/Users/user/NestCraft/docs/backend/checkout-order-endpoint.md)
 - [database-setup-and-seeding.md](c:/Users/user/NestCraft/docs/backend/database-setup-and-seeding.md)
 - [orders-history-api.md](c:/Users/user/NestCraft/docs/backend/orders-history-api.md)

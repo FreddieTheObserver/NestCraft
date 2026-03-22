@@ -18,6 +18,7 @@ The purpose of the admin products UI is to let an authenticated admin user:
 - see active and inactive products
 - create products
 - edit products
+- upload product images
 - deactivate products
 - reactivate products
 
@@ -32,6 +33,7 @@ This frontend feature depends on the backend admin endpoints that already exist:
 
 - `GET /api/admin/products`
 - `GET /api/categories`
+- `POST /api/uploads/products`
 - `POST /api/products`
 - `PATCH /api/products/:id`
 - `PATCH /api/products/:id/deactivate`
@@ -52,6 +54,7 @@ Route protection:
 Service layer:
 
 - [adminProducts.ts](c:/Users/user/NestCraft/client/src/services/adminProducts.ts)
+- [images.ts](c:/Users/user/NestCraft/client/src/utils/images.ts)
 
 Reusable form:
 
@@ -290,7 +293,7 @@ It handles:
 - price
 - stock
 - category selection
-- image URL
+- product image upload and preview
 - featured flag
 - active flag
 
@@ -311,12 +314,28 @@ That is necessary because:
 
 Without that synchronization, the form would lock itself to the first render's initial state.
 
+## Product Image Upload Flow
+
+The shared form now uploads product images before the final product save request.
+
+That flow is:
+
+1. admin chooses a file in the form
+2. form calls `onImageUpload(file)`
+3. page uploads the file through `uploadProductImage(file, token)`
+4. backend returns `{ imageUrl }`
+5. form stores the returned `imageUrl`
+6. create or edit submission includes that `imageUrl`
+
+For the full frontend upload-specific documentation, see [product-image-upload-ui.md](c:/Users/user/NestCraft/docs/frontend/product-image-upload-ui.md).
+
 ## Create Product Page
 
 [AdminCreateProductPage.tsx](c:/Users/user/NestCraft/client/src/pages/AdminCreateProductPage.tsx) is responsible for:
 
 - loading categories
 - preparing blank form defaults
+- providing the image upload handler
 - submitting the form to `POST /api/products`
 - redirecting back to `/admin/products` on success
 
@@ -339,6 +358,7 @@ That is the correct division of responsibilities.
 - loading admin products
 - finding the matching product by `id`
 - mapping the product into `ProductFormInput`
+- providing the image upload handler
 - submitting the update
 
 ## Important Current Limitation
@@ -411,6 +431,7 @@ This feature is working correctly when:
 - admin users can open `/admin/products`
 - non-admin users are redirected away from admin pages
 - the list shows active and inactive products
+- create and edit forms can upload an image before save
 - create form loads categories and creates products
 - edit form loads the current product and updates it
 - deactivate works

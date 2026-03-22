@@ -45,11 +45,13 @@ These slices are already implemented:
 - admin product management
   - `GET /api/admin/products`
   - `GET /api/categories`
+  - `POST /api/uploads/products`
   - `POST /api/products`
   - `PATCH /api/products/:id`
   - `PATCH /api/products/:id/deactivate`
   - frontend admin products dashboard
   - create and edit product pages
+  - admin-uploaded product image workflow
   - activate/deactivate controls
 - admin order management
   - `GET /api/admin/orders`
@@ -246,6 +248,7 @@ Frontend complete:
 - admin products dashboard
 - create form
 - edit form
+- admin image upload and preview
 - activate/deactivate controls
 - admin-only navigation entry points
 

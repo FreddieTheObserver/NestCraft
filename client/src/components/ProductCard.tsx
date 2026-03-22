@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import type { Product } from '../services/products'
+import { resolveImageUrl } from '../utils/images'
 
 type ProductCardProps = {
   product: Product
@@ -9,7 +10,7 @@ type ProductCardProps = {
 
 function ProductCard({ product }: ProductCardProps) {
   const [imageFailed, setImageFailed] = useState(false)
-  const imageUrl = product.imageUrl ?? undefined
+  const imageUrl = resolveImageUrl(product.imageUrl) ?? undefined
   const showImage = Boolean(imageUrl) && !imageFailed
   const stockCopy = product.stock > 0 ? `${product.stock} available` : 'Unavailable'
 

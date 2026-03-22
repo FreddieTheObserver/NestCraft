@@ -13,6 +13,9 @@ import authRouter from "./routes/auth.js";
 import { requireAuth } from './middleware/authMiddleware.js';
 import orderRouter from "./routes/order.js";
 
+import { uploadsRootDirectory } from "./config/upload.js";
+import uploadRouter from "./routes/upload.js";
+
 const app = express();
 
 app.use(
@@ -27,6 +30,8 @@ app.use(
   }),
 );
 app.use(express.json());
+app.use("/api/uploads", uploadRouter);
+app.use("/api/uploads", express.static(uploadsRootDirectory));
 
 app.use("/api/health", healthRouter);
 

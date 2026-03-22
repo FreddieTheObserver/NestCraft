@@ -10,6 +10,7 @@ import {
   type AdminOrder,
 } from '../services/adminOrders'
 import type { OrderStatus } from '../services/orders'
+import { resolveImageUrl } from '../utils/images'
 
 const statusCopy: Record<OrderStatus, string> = {
   pending: 'Pending',
@@ -245,15 +246,18 @@ function AdminOrdersPage() {
 
               <div className="mt-6 grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
                 <div className="space-y-4">
-                  {order.items.map((item) => (
+                  {order.items.map((item) => {
+                    const imageUrl = resolveImageUrl(item.product.imageUrl)
+
+                    return (
                     <div
                       key={item.id}
                       className="flex items-center gap-4 rounded-xl bg-surface-low p-4 transition-colors hover:bg-surface-container"
                     >
                       <div className="h-20 w-20 overflow-hidden rounded-xl bg-surface-white">
-                        {item.product.imageUrl ? (
+                        {imageUrl ? (
                           <img
-                            src={item.product.imageUrl}
+                            src={imageUrl}
                             alt={item.product.name}
                             className="h-full w-full object-cover"
                           />
@@ -277,7 +281,7 @@ function AdminOrdersPage() {
                         ${(Number(item.unitPrice) * item.quantity).toFixed(2)}
                       </p>
                     </div>
-                  ))}
+                  )})}
                 </div>
 
                 <aside className="editorial-panel-muted p-5">

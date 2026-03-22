@@ -1,5 +1,6 @@
 import type { CartItem as CartItemType } from '../context/CartContext'
 import { useCart } from '../context/CartContext'
+import { resolveImageUrl } from '../utils/images'
 
 type CartItemProps = {
   item: CartItemType
@@ -8,14 +9,15 @@ type CartItemProps = {
 function CartItem({ item }: CartItemProps) {
   const { removeFromCart, updateQuantity } = useCart()
   const itemTotal = (Number(item.price) * item.quantity).toFixed(2)
+  const imageUrl = resolveImageUrl(item.imageUrl)
 
   return (
     <article className="editorial-panel-muted p-5 sm:p-6">
       <div className="grid gap-5 md:grid-cols-[150px_1fr] xl:grid-cols-[150px_1fr_auto]">
         <div className="overflow-hidden rounded-[1.25rem] bg-surface-white">
-        {item.imageUrl ? (
+        {imageUrl ? (
           <img
-            src={item.imageUrl}
+            src={imageUrl}
             alt={item.name}
             className="aspect-[4/5] h-full w-full object-cover"
           />

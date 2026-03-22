@@ -11,6 +11,7 @@ import {
   type ProductCategory,
   type ProductSort,
 } from '../services/products'
+import { resolveImageUrl } from '../utils/images'
 
 function ProductsPage() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -211,6 +212,7 @@ function ProductsPage() {
   }
 
   const featuredProduct = products.find((product) => product.isFeatured) ?? products[0]
+  const featuredImageUrl = resolveImageUrl(featuredProduct.imageUrl)
   const visibleCategoryCount = new Set(products.map((product) => product.category.id)).size
   const totalVisibleStock = products.reduce((sum, product) => sum + product.stock, 0)
   const activeFilters = [
@@ -302,9 +304,9 @@ function ProductsPage() {
 
               <div className="relative lg:translate-y-12">
                 <div className="overflow-hidden rounded-[1.5rem] bg-surface-white shadow-lift">
-                  {featuredProduct.imageUrl ? (
+                  {featuredImageUrl ? (
                     <img
-                      src={featuredProduct.imageUrl}
+                      src={featuredImageUrl}
                       alt={featuredProduct.name}
                       className="aspect-[4/5] w-full object-cover"
                     />

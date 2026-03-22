@@ -39,6 +39,21 @@ export const productListQuerySchema = z.object({
 
 export type ProductListQuery = z.infer<typeof productListQuerySchema>;
 
+const optionalProductImageSchema = z
+      .string() 
+      .trim()
+      .optional()
+      .refine(
+            (value) => 
+                  value === undefined || 
+                  value === "" ||
+                  value.startsWith("/api/uploads") ||
+                  z.string().url().safeParse(value).success,
+            {
+                  message: "Image must be an uploaded file path or valid URL",
+            },
+      );
+
 export const createProductSchema = z.object({
       name: z.string().trim().min(2, "Name must be at least 2 characters"),
       slug: z
@@ -49,7 +64,7 @@ export const createProductSchema = z.object({
       description: z.string().trim().min(10, "Description must be at least 10 characters"),
       price: z.coerce.number().positive("Price must be greater than 0"),
       stock: z.coerce.number().int().min(0, "Stock cannot be negative"), 
-      imageUrl: z.string().trim().url("Image URL must be valid").optional().or(z.literal("")),
+      imageUrl: optionalProductImageSchema,
       categoryId: z.coerce.number().int().positive("Category is required"),
       isFeatured: z.boolean().optional(),
       isActive: z.boolean().optional(),
@@ -66,7 +81,7 @@ export const updateProductSchema = z.object({
       description: z.string().trim().min(10, "Description must be at least 10 characters").optional(),
       price: z.coerce.number().positive("Price must be greater than 0").optional(),
       stock: z.coerce.number().int().min(0, "Stock cannot be negative").optional(), 
-      imageUrl: z.string().trim().url("Image URL must be valid").optional().or(z.literal("")),
+      imageUrl: optionalProductImageSchema,
       categoryId: z.coerce.number().int().positive("Category is required").optional(),
       isFeatured: z.boolean().optional(),
       isActive: z.boolean().optional(),

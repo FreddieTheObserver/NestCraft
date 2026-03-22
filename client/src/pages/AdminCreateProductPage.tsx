@@ -8,6 +8,7 @@ import { useAuth } from '../context/AuthContext'
 import {
       createAdminProduct,
       getCategories,
+      uploadProductImage,
       type CategoryOption,
       type ProductFormInput,
 } from '../services/adminProducts'
@@ -66,6 +67,11 @@ function AdminCreateProductPage() {
                   cancelled = true
             }
       }, [])
+
+      async function handleImageUpload(file: File) {
+            const result = await uploadProductImage(file, token)
+            return result.imageUrl
+      }
 
       async function handleSubmit(data: ProductFormInput) {
             try {
@@ -152,6 +158,7 @@ function AdminCreateProductPage() {
                               submitLabel="Create product"
                               loading={submitting}
                               error={error}
+                              onImageUpload={handleImageUpload}
                               onSubmit={handleSubmit}
                         />
                   </section>

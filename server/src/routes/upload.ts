@@ -15,7 +15,7 @@ uploadRouter.post('/products', requireAuth, requireAdmin, (req, res, next) => {
             }
 
             if (error instanceof multer.MulterError && error.code === "LIMIT_FILE_SIZE") {
-                  return sendError(res, 400, "IMAGE_TOO_LARGE", "Image must be 5mb or smaller");
+                  return sendError(res, 400, "IMAGE_TOO_LARGE", "Image must be 5MB or smaller");
             }
 
             if (error instanceof Error && error.message === "INVALID_IMAGE_TYPE") {
@@ -23,7 +23,7 @@ uploadRouter.post('/products', requireAuth, requireAdmin, (req, res, next) => {
                         res,
                         400,
                         "INVALID_IMAGE_TYPE",
-                        "Only JPG, PNG, WENP, and AVIF images are allowed",
+                        "Only JPG, PNG, WEBP, and AVIF images are allowed",
                   );
             }
 

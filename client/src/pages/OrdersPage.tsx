@@ -6,6 +6,7 @@ import StatusPanel from '../components/StatusPanel'
 import { useAuth } from '../context/AuthContext'
 import { subscribeToOrderStream } from '../services/orderStream'
 import { getMyOrders, type OrderResponse } from '../services/orders'
+import { resolveImageUrl } from '../utils/images'
 
 const statusCopy = {
   pending: 'Pending review',
@@ -163,16 +164,19 @@ function OrdersPage() {
                 </div>
 
                 <div className="space-y-3">
-                  {order.items.map((item) => (
+                  {order.items.map((item) => {
+                    const imageUrl = resolveImageUrl(item.product.imageUrl)
+
+                    return (
                     <div
                       key={item.id}
                       className="rounded-xl bg-surface-low p-4 transition-colors hover:bg-surface-container"
                     >
                       <div className="flex items-center gap-4">
                         <div className="h-20 w-20 overflow-hidden rounded-xl bg-surface-white">
-                          {item.product.imageUrl ? (
+                          {imageUrl ? (
                             <img
-                              src={item.product.imageUrl}
+                              src={imageUrl}
                               alt={item.product.name}
                               className="h-full w-full object-cover"
                             />
@@ -200,7 +204,7 @@ function OrdersPage() {
                         </p>
                       </div>
                     </div>
-                  ))}
+                  )})}
                 </div>
               </div>
 

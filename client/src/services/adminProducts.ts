@@ -3,6 +3,32 @@ import type { Product } from './products';
 
 export type AdminProduct = Product;
 
+export type UploadProductImageResponse = {
+      imageUrl: string
+}
+
+export async function uploadProductImage(
+      file: File,
+      token: string,
+): Promise<UploadProductImageResponse> {
+      const formData = new FormData()
+      formData.append('image', file)
+
+      const response = await apiFetch('/api/uploads/products', {
+            method: 'POST',
+            headers: {
+                  Authorization: `Bearer ${token}`,
+            },
+            body: formData,
+      })
+
+      if (!response.ok) {
+            throw new Error(await readApiError(response, 'Failed to upload image'))
+      }
+
+      return response.json() as Promise<UploadProductImageResponse>
+}
+
 export type CategoryOption = {
       id: number
       name: string     

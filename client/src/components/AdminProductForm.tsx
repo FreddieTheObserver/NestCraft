@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import type { CategoryOption, ProductFormInput } from '../services/adminProducts'
+import { resolveImageUrl } from '../utils/images'
 
 type AdminProductFormProps = {
   initialValues: ProductFormInput
@@ -8,6 +9,7 @@ type AdminProductFormProps = {
   submitLabel: string
   loading: boolean
   error: string
+  onImageUpload: (file: File) => Promise<string>
   onSubmit: (data: ProductFormInput) => Promise<void>
 }
 
@@ -17,13 +19,47 @@ function AdminProductForm({
   submitLabel,
   loading,
   error,
+  onImageUpload,
   onSubmit,
 }: AdminProductFormProps) {
   const [form, setForm] = useState<ProductFormInput>(initialValues)
+  const [uploadingImage, setUploadingImage] = useState(false)
+  const [imageError, setImageError] = useState('')
 
   useEffect(() => {
     setForm(initialValues)
+    setImageError('')
   }, [initialValues])
+
+  const previewImageUrl = resolveImageUrl(form.imageUrl)
+
+  async function handleImageChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const input = event.currentTarget
+    const file = input.files?.[0]
+
+    if (!file) {
+      return
+    }
+
+    try {
+      setUploadingImage(true)
+      setImageError('')
+
+      const imageUrl = await onImageUpload(file)
+
+      setForm((currentForm) => ({
+        ...currentForm,
+        imageUrl,
+      }))
+    } catch (uploadError) {
+      setImageError(
+        uploadError instanceof Error ? uploadError.message : 'Failed to upload image',
+      )
+    } finally {
+      setUploadingImage(false)
+      input.value = ''
+    }
+  }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -112,15 +148,49 @@ function AdminProductForm({
         </div>
       </div>
 
-      <div>
-        <label className="editorial-field-label">Image URL</label>
-        <input
-          type="text"
-          placeholder="https://..."
-          value={form.imageUrl}
-          onChange={(event) => setForm({ ...form, imageUrl: event.target.value })}
-          className="editorial-input mt-3"
-        />
+      <div className="grid gap-4">
+        <div>
+          <label className="editorial-field-label">Product image</label>
+          <input
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/avif"
+            onChange={(event) => void handleImageChange(event)}
+            className="editorial-input mt-3 file:mr-4 file:rounded-lg file:border-0 file:bg-secondary/10 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-secondary"
+          />
+          <p className="mt-2 text-sm text-primary">
+            Upload JPG, PNG, WEBP, or AVIF up to 5MB.
+          </p>
+        </div>
+
+        {previewImageUrl ? (
+          <div className="overflow-hidden rounded-[1.25rem] bg-surface-low">
+            <img
+              src={previewImageUrl}
+              alt={form.name || 'Product preview'}
+              className="aspect-[4/5] w-full object-cover"
+            />
+          </div>
+        ) : (
+          <div className="flex aspect-[4/5] items-center justify-center rounded-[1.25rem] bg-surface-low px-6 text-center text-sm text-primary">
+            No image uploaded yet.
+          </div>
+        )}
+
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setForm((currentForm) => ({ ...currentForm, imageUrl: '' }))}
+            disabled={uploadingImage || !form.imageUrl}
+            className="editorial-button-tertiary disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Remove image
+          </button>
+          {uploadingImage ? (
+            <p className="editorial-kicker text-secondary">Uploading image...</p>
+          ) : null}
+        </div>
+
+        {imageError ? <p className="editorial-error">{imageError}</p> : null}
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
@@ -153,10 +223,10 @@ function AdminProductForm({
 
       <button
         type="submit"
-        disabled={loading}
+        disabled={loading || uploadingImage}
         className="editorial-button-primary disabled:cursor-not-allowed disabled:opacity-50"
       >
-        {loading ? 'Saving...' : submitLabel}
+        {uploadingImage ? 'Uploading image...' : loading ? 'Saving...' : submitLabel}
       </button>
     </form>
   )

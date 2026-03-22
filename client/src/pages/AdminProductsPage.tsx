@@ -10,6 +10,7 @@ import {
       reactivateAdminProduct,
       type AdminProduct,
 } from '../services/adminProducts'
+import { resolveImageUrl } from '../utils/images'
 
 function AdminProductsPage() {
       const { token } = useAuth()
@@ -178,13 +179,16 @@ function AdminProductsPage() {
                         />
                   ) : (
                         <section className="grid gap-6 lg:grid-cols-2">
-                              {products.map((product) => (
+                              {products.map((product) => {
+                                    const imageUrl = resolveImageUrl(product.imageUrl)
+
+                                    return (
                                     <article key={product.id} className="editorial-panel p-6 sm:p-7">
                                           <div className="grid gap-5 sm:grid-cols-[150px_1fr]">
                                                 <div className="overflow-hidden rounded-[1.25rem] bg-surface-low">
-                                                      {product.imageUrl ? (
+                                                      {imageUrl ? (
                                                             <img
-                                                                  src={product.imageUrl}
+                                                                  src={imageUrl}
                                                                   alt={product.name}
                                                                   className="aspect-[4/5] h-full w-full object-cover"
                                                             />
@@ -259,7 +263,7 @@ function AdminProductsPage() {
                                                 </div>
                                           </div>
                                     </article>
-                              ))}
+                              )})}
                         </section>
                   )}
             </PageShell>

@@ -8,6 +8,7 @@ import { useAuth } from '../context/AuthContext'
 import {
       getAdminProducts,
       getCategories,
+      uploadProductImage,
       updateAdminProduct,
       type AdminProduct,
       type CategoryOption,
@@ -77,6 +78,11 @@ function AdminEditProductPage() {
                   cancelled = true
             }
       }, [id, token])
+
+      async function handleImageUpload(file: File) {
+            const result = await uploadProductImage(file, token)
+            return result.imageUrl
+      }
 
       async function handleSubmit(data: ProductFormInput) {
             if (!product) {
@@ -172,6 +178,7 @@ function AdminEditProductPage() {
                               submitLabel="Save changes"
                               loading={submitting}
                               error={error}
+                              onImageUpload={handleImageUpload}
                               onSubmit={handleSubmit}
                         />
                   </section>

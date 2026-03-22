@@ -5,6 +5,7 @@ import PageShell from '../components/PageShell'
 import StatusPanel from '../components/StatusPanel'
 import { useCart } from '../context/CartContext'
 import { getProductBySlug, type Product } from '../services/products'
+import { resolveImageUrl } from '../utils/images'
 
 function ProductDetailPage() {
   const { slug } = useParams()
@@ -104,6 +105,7 @@ function ProductDetailPage() {
     product.stock > 0
       ? 'Ships once your order is confirmed and handed into the NestCraft queue.'
       : 'This piece is temporarily out of the active shipping flow.'
+  const imageUrl = resolveImageUrl(product.imageUrl)
 
   return (
     <PageShell maxWidth="7xl">
@@ -114,9 +116,9 @@ function ProductDetailPage() {
       <section className="grid gap-12 lg:grid-cols-[0.92fr_1.08fr] lg:items-start">
         <div className="space-y-6 lg:sticky lg:top-8">
           <div className="overflow-hidden rounded-[1.75rem] bg-surface-white shadow-lift">
-            {product.imageUrl && !imageFailed ? (
+            {imageUrl && !imageFailed ? (
               <img
-                src={product.imageUrl}
+                src={imageUrl}
                 alt={product.name}
                 className="aspect-[4/5] w-full object-cover"
                 onError={() => setImageFailed(true)}
