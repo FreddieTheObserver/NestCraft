@@ -3,7 +3,11 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 function AdminRoute({ children }: { children: React.ReactNode }) {
-      const { isAuthenticated, user } = useAuth();
+      const { isAuthenticated, isInitializing, user } = useAuth();
+
+      if (isInitializing) {
+            return null;
+      }
 
       if (!isAuthenticated) {
             return <Navigate to="/login" replace />

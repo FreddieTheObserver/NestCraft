@@ -46,12 +46,11 @@ export type OrderResponse = {
       }>
 }
 
-export async function createOrder(data: CreateOrderInput, token: string): Promise<OrderResponse> {
+export async function createOrder(data: CreateOrderInput): Promise<OrderResponse> {
       const response = await apiFetch('/api/orders', {
             method: 'POST',
             headers: {
                   'Content-Type': 'application/json',
-                  Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify(data),
       })
@@ -63,12 +62,8 @@ export async function createOrder(data: CreateOrderInput, token: string): Promis
       return response.json() as Promise<OrderResponse>
 }
 
-export async function getMyOrders(token: string): Promise<OrderResponse[]> {
-      const response = await apiFetch('/api/orders/me', {
-            headers: {
-                  Authorization: `Bearer ${token}`,
-            },
-      })
+export async function getMyOrders(): Promise<OrderResponse[]> {
+      const response = await apiFetch('/api/orders/me')
 
       if (!response.ok) {
             throw new Error(await readApiError(response, 'Failed to fetch orders'))
@@ -79,13 +74,8 @@ export async function getMyOrders(token: string): Promise<OrderResponse[]> {
 
 export async function getMyOrderByOrderNumber(
       orderNumber: string,
-      token: string,
 ): Promise<OrderResponse> {
-      const response = await apiFetch(`/api/orders/${orderNumber}`, {
-            headers: {
-                  Authorization: `Bearer ${token}`,
-            },
-      });
+      const response = await apiFetch(`/api/orders/${orderNumber}`);
 
       if (!response.ok) {
             throw new Error(await readApiError(response, "Failed to fetch order"));

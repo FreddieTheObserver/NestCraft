@@ -9,7 +9,7 @@ import { createOrder, type OrderResponse } from '../services/orders'
 
 function CheckoutPage() {
   const { items, subtotal, clearCart } = useCart()
-  const { user, token } = useAuth()
+  const { user, isAuthenticated } = useAuth()
 
   const [shippingName, setShippingName] = useState(user?.name ?? '')
   const [shippingEmail, setShippingEmail] = useState(user?.email ?? '')
@@ -27,7 +27,7 @@ function CheckoutPage() {
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
-    if (!token) {
+    if (!isAuthenticated) {
       setError('You must be logged in to place an order.')
       return
     }
@@ -41,21 +41,18 @@ function CheckoutPage() {
       setLoading(true)
       setError('')
 
-      const order = await createOrder(
-        {
-          shippingName,
-          shippingEmail,
-          shippingPhone,
-          shippingCity,
-          shippingAddress,
-          notes: notes || undefined,
-          items: items.map((item) => ({
-            productId: item.id,
-            quantity: item.quantity,
-          })),
-        },
-        token,
-      )
+      const order = await createOrder({
+        shippingName,
+        shippingEmail,
+        shippingPhone,
+        shippingCity,
+        shippingAddress,
+        notes: notes || undefined,
+        items: items.map((item) => ({
+          productId: item.id,
+          quantity: item.quantity,
+        })),
+      })
 
       setCreatedOrder(order)
       clearCart()

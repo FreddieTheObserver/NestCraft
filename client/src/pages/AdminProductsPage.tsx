@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom'
 
 import PageShell from '../components/PageShell'
 import StatusPanel from '../components/StatusPanel'
-import { useAuth } from '../context/AuthContext'
 import {
       deactivateAdminProduct,
       getAdminProducts,
@@ -13,7 +12,6 @@ import {
 import { resolveImageUrl } from '../utils/images'
 
 function AdminProductsPage() {
-      const { token } = useAuth()
       const [products, setProducts] = useState<AdminProduct[]>([])
       const [loading, setLoading] = useState(true)
       const [error, setError] = useState('')
@@ -27,7 +25,7 @@ function AdminProductsPage() {
                         setLoading(true)
                         setError('')
 
-                        const data = await getAdminProducts(token)
+                        const data = await getAdminProducts()
 
                         if (!cancelled) {
                               setProducts(data)
@@ -52,12 +50,12 @@ function AdminProductsPage() {
             return () => {
                   cancelled = true
             }
-      }, [token])
+      }, [])
 
       async function handleDeactivate(id: number) {
             try {
                   setActionError('')
-                  const updated = await deactivateAdminProduct(id, token)
+                  const updated = await deactivateAdminProduct(id)
                   setProducts((currentProducts) =>
                         currentProducts.map((product) =>
                               product.id === id ? updated : product,
@@ -75,7 +73,7 @@ function AdminProductsPage() {
       async function handleReactivate(id: number) {
             try {
                   setActionError('')
-                  const updated = await reactivateAdminProduct(id, token)
+                  const updated = await reactivateAdminProduct(id)
                   setProducts((currentProducts) =>
                         currentProducts.map((product) =>
                               product.id === id ? updated : product,

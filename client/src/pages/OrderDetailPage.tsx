@@ -22,14 +22,14 @@ const statusTone = {
 
 function OrderDetailPage() {
   const { orderNumber } = useParams()
-  const { token } = useAuth()
+  const { isAuthenticated } = useAuth()
 
   const [order, setOrder] = useState<OrderResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
   const loadOrder = useEffectEvent(async () => {
-    if (!token) {
+    if (!isAuthenticated) {
       setOrder(null)
       setError('You must be logged in to view this order.')
       setLoading(false)
@@ -47,7 +47,7 @@ function OrderDetailPage() {
       setLoading(true)
       setError('')
 
-      const data = await getMyOrderByOrderNumber(orderNumber, token)
+      const data = await getMyOrderByOrderNumber(orderNumber)
 
       setOrder(data)
     } catch (loadError) {
@@ -60,15 +60,14 @@ function OrderDetailPage() {
 
   useEffect(() => {
     void loadOrder()
-  }, [orderNumber, token])
+  }, [orderNumber, isAuthenticated])
 
   useEffect(() => {
-    if (!token || !orderNumber) {
+    if (!isAuthenticated || !orderNumber) {
       return
     }
 
     return subscribeToOrderStream({
-      token,
       onEvent(event) {
         if (event.type !== 'order.updated' || event.orderNumber !== orderNumber) {
           return
@@ -87,7 +86,7 @@ function OrderDetailPage() {
         console.error('Order detail stream disconnected:', streamError)
       },
     })
-  }, [orderNumber, token])
+  }, [orderNumber, isAuthenticated])
 
   if (loading) {
     return (

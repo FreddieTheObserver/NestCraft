@@ -25,14 +25,14 @@ const statusTone: Record<OrderStatus, string> = {
 }
 
 function AdminOrdersPage() {
-  const { token } = useAuth()
+  const { isAuthenticated } = useAuth()
   const [orders, setOrders] = useState<AdminOrder[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [updatingId, setUpdatingId] = useState<number | null>(null)
 
   const loadOrders = useEffectEvent(async () => {
-    if (!token) {
+    if (!isAuthenticated) {
       setOrders([])
       setError('You must be logged in to manage orders.')
       setLoading(false)
@@ -43,7 +43,7 @@ function AdminOrdersPage() {
       setLoading(true)
       setError('')
 
-      const data = await getAdminOrders(token)
+      const data = await getAdminOrders()
 
       setOrders(data)
     } catch (loadError) {
@@ -60,12 +60,11 @@ function AdminOrdersPage() {
   useEffect(() => {
     void loadOrders()
 
-    if (!token) {
+    if (!isAuthenticated) {
       return
     }
 
     return subscribeToOrderStream({
-      token,
       onEvent() {
         void loadOrders()
       },
@@ -73,14 +72,14 @@ function AdminOrdersPage() {
         console.error('Admin order stream disconnected:', streamError)
       },
     })
-  }, [token])
+  }, [isAuthenticated])
 
   async function handleStatusChange(id: number, status: OrderStatus) {
     try {
       setUpdatingId(id)
       setError('')
 
-      const updatedOrder = await updateAdminOrderStatus(id, status, token)
+      const updatedOrder = await updateAdminOrderStatus(id, status)
 
       setOrders((currentOrders) =>
         currentOrders.map((order) => (order.id === id ? updatedOrder : order)),

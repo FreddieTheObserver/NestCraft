@@ -12,12 +12,8 @@ export type AdminOrder = OrderResponse & {
   }
 }
 
-export async function getAdminOrders(token: string): Promise<AdminOrder[]> {
-  const response = await apiFetch('/api/admin/orders', {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  })
+export async function getAdminOrders(): Promise<AdminOrder[]> {
+  const response = await apiFetch('/api/admin/orders')
 
   if (!response.ok) {
     throw new Error(await readApiError(response, 'Failed to fetch admin orders'))
@@ -29,13 +25,11 @@ export async function getAdminOrders(token: string): Promise<AdminOrder[]> {
 export async function updateAdminOrderStatus(
   id: number,
   status: OrderStatus,
-  token: string,
 ): Promise<AdminOrder> {
   const response = await apiFetch(`/api/admin/orders/${id}/status`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({ status }),
   })

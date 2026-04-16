@@ -12,9 +12,12 @@ function StoreHeader() {
     ? `${user.name}${user.role === 'admin' ? ' · Admin' : ''}`
     : 'Curated home objects'
 
-  function handleLogout() {
-    logout()
-    navigate('/login')
+  async function handleLogout() {
+    try {
+      await logout()
+    } finally {
+      navigate('/login')
+    }
   }
 
   function getNavLinkClassName(isActive: boolean) {
@@ -89,7 +92,7 @@ function StoreHeader() {
             <>
               <button
                 type="button"
-                onClick={handleLogout}
+                onClick={() => void handleLogout()}
                 className="inline-flex items-center justify-center px-0 py-2 text-[0.72rem] font-bold uppercase tracking-[0.22em] text-primary transition hover:text-ink"
               >
                 Logout

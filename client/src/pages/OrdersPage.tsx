@@ -21,13 +21,13 @@ const statusTone = {
 } as const
 
 function OrdersPage() {
-  const { token } = useAuth()
+  const { isAuthenticated } = useAuth()
   const [orders, setOrders] = useState<OrderResponse[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
   const loadOrders = useEffectEvent(async () => {
-    if (!token) {
+    if (!isAuthenticated) {
       setOrders([])
       setError('You must be logged in to view your orders.')
       setLoading(false)
@@ -38,7 +38,7 @@ function OrdersPage() {
       setLoading(true)
       setError('')
 
-      const data = await getMyOrders(token)
+      const data = await getMyOrders()
 
       setOrders(data)
     } catch (loadError) {
@@ -55,12 +55,11 @@ function OrdersPage() {
   useEffect(() => {
     void loadOrders()
 
-    if (!token) {
+    if (!isAuthenticated) {
       return
     }
 
     return subscribeToOrderStream({
-      token,
       onEvent() {
         void loadOrders()
       },
@@ -68,7 +67,7 @@ function OrdersPage() {
         console.error('Order stream disconnected:', streamError)
       },
     })
-  }, [token])
+  }, [isAuthenticated])
 
   if (loading) {
     return (

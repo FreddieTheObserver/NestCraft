@@ -4,7 +4,6 @@ import { Link, useNavigate } from 'react-router-dom'
 import AdminProductForm from '../components/AdminProductForm'
 import PageShell from '../components/PageShell'
 import StatusPanel from '../components/StatusPanel'
-import { useAuth } from '../context/AuthContext'
 import {
       createAdminProduct,
       getCategories,
@@ -27,7 +26,6 @@ const initialValues: ProductFormInput = {
 
 function AdminCreateProductPage() {
       const navigate = useNavigate()
-      const { token } = useAuth()
       const [categories, setCategories] = useState<CategoryOption[]>([])
       const [loading, setLoading] = useState(true)
       const [submitting, setSubmitting] = useState(false)
@@ -69,7 +67,7 @@ function AdminCreateProductPage() {
       }, [])
 
       async function handleImageUpload(file: File) {
-            const result = await uploadProductImage(file, token)
+            const result = await uploadProductImage(file)
             return result.imageUrl
       }
 
@@ -83,7 +81,7 @@ function AdminCreateProductPage() {
                         categoryId: data.categoryId || categories[0]?.id || 0,
                   }
 
-                  await createAdminProduct(payload, token)
+                  await createAdminProduct(payload)
                   navigate('/admin/products')
             } catch (error) {
                   setError(

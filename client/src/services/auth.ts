@@ -2,24 +2,23 @@ import { apiFetch, readApiError } from '../utils/api'
 
 type AuthUser = {
       id: number
-      name: string 
-      email: string 
-      role: string 
+      name: string
+      email: string
+      role: string
 }
 
 type AuthResponse = {
       user: AuthUser
-      token: string
 }
 
 type RegisterInput = {
       name: string
-      email: string 
+      email: string
       password: string
 }
 
 type LoginInput = {
-      email: string 
+      email: string
       password: string
 }
 
@@ -53,6 +52,30 @@ export async function loginUser(data: LoginInput): Promise<AuthResponse> {
       }
 
       return response.json() as Promise<AuthResponse>;
+}
+
+export async function getSession(): Promise<AuthResponse | null> {
+      const response = await apiFetch('/api/auth/session')
+
+      if (response.status === 401) {
+            return null;
+      }
+
+      if (!response.ok) {
+            throw new Error(await readApiError(response, "Failed to load session"));
+      }
+
+      return response.json() as Promise<AuthResponse>;
+}
+
+export async function logoutUser(): Promise<void> {
+      const response = await apiFetch('/api/auth/logout', {
+            method: 'POST',
+      })
+
+      if (!response.ok) {
+            throw new Error(await readApiError(response, "Failed to log out"));
+      }
 }
 
 export type { AuthUser, AuthResponse, RegisterInput, LoginInput };

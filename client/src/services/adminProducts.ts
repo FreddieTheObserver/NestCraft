@@ -9,16 +9,12 @@ export type UploadProductImageResponse = {
 
 export async function uploadProductImage(
       file: File,
-      token: string,
 ): Promise<UploadProductImageResponse> {
       const formData = new FormData()
       formData.append('image', file)
 
       const response = await apiFetch('/api/uploads/products', {
             method: 'POST',
-            headers: {
-                  Authorization: `Bearer ${token}`,
-            },
             body: formData,
       })
 
@@ -31,31 +27,27 @@ export async function uploadProductImage(
 
 export type CategoryOption = {
       id: number
-      name: string     
-      slug: string 
-      imageUrl: string | null       
-      createdAt: string 
+      name: string
+      slug: string
+      imageUrl: string | null
+      createdAt: string
       updatedAt: string
 }
 
 export type ProductFormInput = {
-      name: string 
-      slug: string 
-      description: string 
-      price: number 
-      stock: number 
-      imageUrl: string 
-      categoryId: number 
-      isFeatured: boolean 
+      name: string
+      slug: string
+      description: string
+      price: number
+      stock: number
+      imageUrl: string
+      categoryId: number
+      isFeatured: boolean
       isActive: boolean
 }
 
-export async function getAdminProducts(token: string): Promise<AdminProduct[]> {
-      const response = await apiFetch('/api/admin/products', {
-            headers: {
-                  Authorization: `Bearer ${token}`,
-            },
-      })
+export async function getAdminProducts(): Promise<AdminProduct[]> {
+      const response = await apiFetch('/api/admin/products')
 
       if (!response.ok) {
             throw new Error(await readApiError(response, "Failed to fetch admin products"))
@@ -76,13 +68,11 @@ export async function getCategories(): Promise<CategoryOption[]> {
 
 export async function createAdminProduct(
       data: ProductFormInput,
-      token: string,
 ): Promise<AdminProduct> {
-      const response = await apiFetch('/api/products', {
+      const response = await apiFetch('/api/admin/products', {
             method: 'POST',
             headers: {
                   'Content-Type': 'application/json',
-                  Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify(data),
       })
@@ -97,13 +87,11 @@ export async function createAdminProduct(
 export async function updateAdminProduct(
       id: number,
       data: Partial<ProductFormInput>,
-      token: string,
 ): Promise<AdminProduct> {
-      const response = await apiFetch(`/api/products/${id}`, {
+      const response = await apiFetch(`/api/admin/products/${id}`, {
             method: 'PATCH',
             headers: {
                   'Content-Type': 'application/json',
-                  'Authorization': `Bearer ${token}`,
             },
             body: JSON.stringify(data),
       })
@@ -117,13 +105,9 @@ export async function updateAdminProduct(
 
 export async function deactivateAdminProduct(
       id: number,
-      token: string,
 ): Promise<AdminProduct> {
-      const response = await apiFetch(`/api/products/${id}/deactivate`, {
+      const response = await apiFetch(`/api/admin/products/${id}/deactivate`, {
             method: 'PATCH',
-            headers: {
-                  Authorization: `Bearer ${token}`,
-            },
       })
 
       if (!response.ok) {
@@ -135,7 +119,6 @@ export async function deactivateAdminProduct(
 
 export async function reactivateAdminProduct(
       id: number,
-      token: string,
 ): Promise<AdminProduct> {
-      return updateAdminProduct(id, { isActive: true }, token);
+      return updateAdminProduct(id, { isActive: true });
 }

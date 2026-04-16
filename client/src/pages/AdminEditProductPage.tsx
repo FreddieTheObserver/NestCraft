@@ -4,7 +4,6 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import AdminProductForm from '../components/AdminProductForm'
 import PageShell from '../components/PageShell'
 import StatusPanel from '../components/StatusPanel'
-import { useAuth } from '../context/AuthContext'
 import {
       getAdminProducts,
       getCategories,
@@ -18,7 +17,6 @@ import {
 function AdminEditProductPage() {
       const { id } = useParams()
       const navigate = useNavigate()
-      const { token } = useAuth()
 
       const [product, setProduct] = useState<AdminProduct | null>(null)
       const [categories, setCategories] = useState<CategoryOption[]>([])
@@ -42,7 +40,7 @@ function AdminEditProductPage() {
 
                         const [categoryData, productData] = await Promise.all([
                               getCategories(),
-                              getAdminProducts(token),
+                              getAdminProducts(),
                         ])
 
                         const matchedProduct = productData.find(
@@ -77,10 +75,10 @@ function AdminEditProductPage() {
             return () => {
                   cancelled = true
             }
-      }, [id, token])
+      }, [id])
 
       async function handleImageUpload(file: File) {
-            const result = await uploadProductImage(file, token)
+            const result = await uploadProductImage(file)
             return result.imageUrl
       }
 
@@ -93,7 +91,7 @@ function AdminEditProductPage() {
                   setSubmitting(true)
                   setError('')
 
-                  await updateAdminProduct(product.id, data, token)
+                  await updateAdminProduct(product.id, data)
                   navigate('/admin/products')
             } catch (error) {
                   setError(

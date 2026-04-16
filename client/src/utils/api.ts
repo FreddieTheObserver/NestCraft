@@ -39,7 +39,10 @@ export function buildApiUrl(path: string) {
 }
 
 export function apiFetch(path: string, init?: RequestInit) {
-  return fetch(buildApiUrl(path), init)
+  return fetch(buildApiUrl(path), {
+    credentials: 'include',
+    ...init,
+  })
 }
 
 export async function readApiError(response: Response, fallback: string) {

@@ -15,7 +15,6 @@ export type OrderStreamEvent =
         };
 
 type OrderStreamSubscriptionOptions = {
-      token: string
       signal?: AbortSignal
       onEvent: (event: OrderStreamEvent) => void
       onError?: (error: Error) => void
@@ -25,15 +24,14 @@ const ORDER_STREAM_PATH = '/api/orders/stream';
 const RECONNECT_DELAY_MS = 3_000;
 
 async function readOrderStream(
-      token: string,
       signal: AbortSignal,
       onEvent: (event: OrderStreamEvent) => void,
 ) {
       const response = await fetch(buildApiUrl(ORDER_STREAM_PATH), {
             headers: {
                   Accept: 'text/event-stream',
-                  Authorization: `Bearer ${token}`,
             },
+            credentials: 'include',
             cache: 'no-store',
             signal,
       });
@@ -106,7 +104,6 @@ async function readOrderStream(
 }
 
 export function subscribeToOrderStream({
-      token,
       signal,
       onEvent,
       onError,
@@ -122,7 +119,7 @@ export function subscribeToOrderStream({
 
       const connect = async () => {
             try {
-                  await readOrderStream(token, controller.signal, onEvent);
+                  await readOrderStream(controller.signal, onEvent);
             } catch (error) {
                   if (controller.signal.aborted) {
                         return;

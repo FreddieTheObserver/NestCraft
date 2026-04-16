@@ -1,9 +1,11 @@
 /* eslint-disable react-refresh/only-export-components */
 
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 
 import {
+      getSession,
       loginUser,
+      logoutUser,
       registerUser,
       type AuthUser,
       type LoginInput,
@@ -12,97 +14,70 @@ import {
 
 type AuthContextValue = {
       user: AuthUser | null
-      token: string
       isAuthenticated: boolean
+      isInitializing: boolean
       login: (data: LoginInput) => Promise<void>
       register: (data: RegisterInput) => Promise<void>
-      logout: () => void
-}
-
-type StoredAuthState = {
-      user: AuthUser | null
-      token: string
+      logout: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-function readStoredAuth(): StoredAuthState {
-      if (typeof window === 'undefined') {
-            return {
-                  user: null,
-                  token: '',
-            };
-      }
-
-      const storedUser = window.localStorage.getItem('auth_user');
-      const storedToken = window.localStorage.getItem('auth_token');
-
-      if (!storedUser || !storedToken) {
-            return {
-                  user: null,
-                  token: '',
-            };
-      }
-
-      try {
-            return {
-                  user: JSON.parse(storedUser) as AuthUser,
-                  token: storedToken,
-            };
-      } catch {
-            window.localStorage.removeItem('auth_user');
-            window.localStorage.removeItem('auth_token');
-
-            return {
-                  user: null,
-                  token: '',
-            };
-      }
-}
-
 function AuthProvider({ children }: { children: React.ReactNode }) {
-      const [{ user, token }, setAuthState] = useState<StoredAuthState>(readStoredAuth);
+      const [user, setUser] = useState<AuthUser | null>(null);
+      const [isInitializing, setIsInitializing] = useState(true);
+
+      useEffect(() => {
+            let cancelled = false;
+
+            async function bootstrap() {
+                  try {
+                        const result = await getSession();
+                        if (!cancelled) {
+                              setUser(result?.user ?? null);
+                        }
+                  } catch {
+                        if (!cancelled) {
+                              setUser(null);
+                        }
+                  } finally {
+                        if (!cancelled) {
+                              setIsInitializing(false);
+                        }
+                  }
+            }
+
+            bootstrap();
+
+            return () => {
+                  cancelled = true;
+            };
+      }, []);
 
       async function login(data: LoginInput) {
             const result = await loginUser(data);
-
-            setAuthState({
-                  user: result.user,
-                  token: result.token,
-            });
-
-            localStorage.setItem('auth_user', JSON.stringify(result.user));
-            localStorage.setItem('auth_token', result.token);
+            setUser(result.user);
       }
 
       async function register(data: RegisterInput) {
             const result = await registerUser(data);
-
-            setAuthState({
-                  user: result.user,
-                  token: result.token,
-            });
-
-            localStorage.setItem('auth_user', JSON.stringify(result.user));  
-            localStorage.setItem('auth_token', result.token);  
+            setUser(result.user);
       }
 
-      function logout() {
-            setAuthState({
-                  user: null,
-                  token: '',
-            });
-
-            localStorage.removeItem('auth_user');
-            localStorage.removeItem('auth_token');
+      async function logout() {
+            try {
+                  await logoutUser();
+            } finally {
+                  setUser(null);
+            }
       }
 
       return (
             <AuthContext.Provider
                   value={{
                         user,
-                        token,
-                        isAuthenticated: Boolean(user && token),
+                        isAuthenticated: Boolean(user),
+                        isInitializing,
                         login,
                         register,
                         logout,
