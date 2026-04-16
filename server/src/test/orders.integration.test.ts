@@ -82,8 +82,8 @@ describe("admin orders list", () => {
 describe("order ownership", () => {
   it("rejects access to another user's order detail", async () => {
     const product = await prisma.product.findFirst({
-      where: { isActive: true },
-      orderBy: { id: "asc" },
+      where: { isActive: true, stock: { gt: 0 } },
+      orderBy: { stock: "desc" },
     });
 
     if (!product) {
