@@ -160,34 +160,56 @@ export async function createOrder(data: CreateOrderInput) {
       return order;
 }
 
-export async function getAllOrdersForAdmin() {
-      return prisma.order.findMany({
-            orderBy: {
-                  createdAt: "desc",
-            },
-            include: {
-                  user: {
-                        select: {
-                              id: true, 
-                              name: true, 
-                              email: true,
-                              role: true,
+type AdminOrderListParams = {
+      page: number;
+      pageSize: number;
+      status?: OrderStatus;
+      search?: string;
+};
+
+export async function getAdminOrdersPage(query: AdminOrderListParams) {
+      const where = {
+            ...(query.status ? { status: query.status } : {}),
+            ...(query.search
+                  ? {
+                        OR: [
+                              { orderNumber: { contains: query.search, mode: "insensitive" as const } },
+                              { shippingEmail: { contains: query.search, mode: "insensitive" as const } },
+                              { shippingName: { contains: query.search, mode: "insensitive" as const } },
+                        ],
+                  }
+                  : {}),
+      };
+
+      const [items, totalCount] = await prisma.$transaction([
+            prisma.order.findMany({
+                  where,
+                  orderBy: { createdAt: "desc" },
+                  include: {
+                        user: {
+                              select: { id: true, name: true, email: true, role: true },
                         },
-                  },
-                  items: {
-                        include: {
-                              product: {
-                                    select: {
-                                          id: true, 
-                                          name: true, 
-                                          slug: true,
-                                          imageUrl: true,
+                        items: {
+                              include: {
+                                    product: {
+                                          select: { id: true, name: true, slug: true, imageUrl: true },
                                     },
                               },
                         },
                   },
-            },
-      });
+                  skip: (query.page - 1) * query.pageSize,
+                  take: query.pageSize,
+            }),
+            prisma.order.count({ where }),
+      ]);
+
+      return {
+            items,
+            page: query.page,
+            pageSize: query.pageSize,
+            totalCount,
+            totalPages: Math.max(1, Math.ceil(totalCount / query.pageSize)),
+      };
 }
 
 export async function updateOrderStatus(id: number, status: OrderStatus) {

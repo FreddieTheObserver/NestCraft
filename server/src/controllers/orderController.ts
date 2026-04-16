@@ -3,13 +3,14 @@ import type { Request } from 'express';
 import type { OrderStatus } from '../generated/prisma/client.js';
 
 import type { AuthenticatedRequest } from '../middleware/authMiddleware.js';
-import { 
-            createOrder, 
-            getAllOrdersForAdmin,
+import {
+            createOrder,
+            getAdminOrdersPage,
             getOrderByOrderNumberForUser,
             getOrdersByUserId,
-            updateOrderStatus, 
+            updateOrderStatus,
 } from '../services/orderService.js';
+import type { AdminOrderListQuery } from '../validation/orderSchemas.js';
 
 import { sendError } from '../utils/http.js';
 
@@ -96,9 +97,10 @@ export async function createOrderHandler(
 
 export async function getAdminOrdersHandler(_req: Request, res: Response) {
       try {
-            const orders = await getAllOrdersForAdmin();
+            const query = res.locals.validatedQuery as AdminOrderListQuery;
+            const page = await getAdminOrdersPage(query);
 
-            return res.status(200).json(orders);
+            return res.status(200).json(page);
       } catch (error) {
             console.error("Fetch admin orders failed: ", error);
             return sendError(res, 500, "INTERNAL_ERROR", "Failed to fetch admin orders");
