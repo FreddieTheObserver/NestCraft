@@ -1,10 +1,7 @@
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 
-import { env } from "../config/env.js";
 import { prisma } from "../lib/prisma.js";
-
-type UserRole = "customer" | "admin";
+import { createSession } from "./sessionService.js";
 
 type SessionUser = {
   id: number;
@@ -15,29 +12,16 @@ type SessionUser = {
 
 type AuthResult = {
   user: SessionUser;
-  sessionToken: string;
+  sessionId: string;
 };
 
-function signSessionToken(userId: number, role: UserRole) {
-  return jwt.sign({ userId, role }, env.jwtSecret, { expiresIn: "7d" });
-}
-
-export function verifySessionToken(token: string) {
-  return jwt.verify(token, env.jwtSecret) as { userId: number; role: UserRole };
-}
-
-export async function getSessionUser(userId: number): Promise<SessionUser | null> {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      role: true,
-    },
-  });
-
-  return user;
+function toSessionUser(user: {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+}): SessionUser {
+  return { id: user.id, name: user.name, email: user.email, role: user.role };
 }
 
 export async function registerUser(
@@ -45,63 +29,35 @@ export async function registerUser(
   email: string,
   password: string,
 ): Promise<AuthResult> {
-  const existinguser = await prisma.user.findUnique({
-    where: { email },
-  });
-
-  if (existinguser) {
+  const existing = await prisma.user.findUnique({ where: { email } });
+  if (existing) {
     throw new Error("EMAIL_ALREADY_IN_USE");
   }
 
   const passwordHash = await bcrypt.hash(password, 10);
   const user = await prisma.user.create({
-    data: {
-      name,
-      email,
-      passwordHash,
-    },
+    data: { name, email, passwordHash },
+    select: { id: true, name: true, email: true, role: true },
   });
 
-  const sessionToken = signSessionToken(user.id, user.role as UserRole);
-
-  return {
-    user: {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-    },
-    sessionToken,
-  };
+  const sessionId = await createSession(user.id);
+  return { user: toSessionUser(user), sessionId };
 }
 
 export async function loginUser(
   email: string,
   password: string,
 ): Promise<AuthResult> {
-  const user = await prisma.user.findUnique({
-    where: { email },
-  });
-
+  const user = await prisma.user.findUnique({ where: { email } });
   if (!user) {
     throw new Error("INVALID_CREDENTIALS");
   }
 
-  const isValidPassword = await bcrypt.compare(password, user.passwordHash);
-
-  if (!isValidPassword) {
+  const ok = await bcrypt.compare(password, user.passwordHash);
+  if (!ok) {
     throw new Error("INVALID_CREDENTIALS");
   }
 
-  const sessionToken = signSessionToken(user.id, user.role as UserRole);
-
-  return {
-    user: {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-    },
-    sessionToken,
-  };
+  const sessionId = await createSession(user.id);
+  return { user: toSessionUser(user), sessionId };
 }

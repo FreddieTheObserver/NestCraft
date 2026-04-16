@@ -35,8 +35,8 @@ export function streamOrderEventsHandler(
       writeSseComment(res, 'connected');
 
       const unsubscribe = subscribeOrderEvents({
-            userId: user.userId,
-            role: user.role,
+            userId: user.id,
+            role: user.role === "admin" ? "admin" : "customer",
             send(event) {
                   writeSseEvent(res, event);
             },

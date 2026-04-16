@@ -23,7 +23,7 @@ export async function getMyOrdersHandler(
       res: Response,
 ) {
       try {
-            const userId = req.user?.userId;
+            const userId = req.user?.id;
 
             if (!userId) {
                   return sendError(res, 401, "UNAUTHORIZED", "Authentication is required");
@@ -43,7 +43,7 @@ export async function createOrderHandler(
       res: Response,
 ) {
       try {
-            const userId = req.user?.userId;
+            const userId = req.user?.id;
             if (!userId) {
                   return sendError(res, 401, "UNAUTHORIZED", "Authentication is required");
             }
@@ -132,7 +132,7 @@ export async function getMyOrderByOrderNumberHandler(
       res: Response,
 ) {
       try {
-            const userId = req.user?.userId;
+            const userId = req.user?.id;
 
             if (!userId) {
                   return sendError(res, 401, "UNAUTHORIZED", "Authentication is required");

@@ -1,26 +1,17 @@
 import type { Request, Response } from "express";
 
-import {
-  getSessionUser,
-  loginUser,
-  registerUser,
-  verifySessionToken,
-} from "../services/authService.js";
 import { getSessionCookieName, getSessionCookieOptions } from "../config/session.js";
+import { loginUser, registerUser } from "../services/authService.js";
+import { destroySession, lookupSession } from "../services/sessionService.js";
 import { sendError } from "../utils/http.js";
 
 export async function register(req: Request, res: Response) {
   try {
     const { name, email, password } = req.body;
-
     const result = await registerUser(name, email, password);
 
     return res
-      .cookie(
-        getSessionCookieName(),
-        result.sessionToken,
-        getSessionCookieOptions(),
-      )
+      .cookie(getSessionCookieName(), result.sessionId, getSessionCookieOptions())
       .status(201)
       .json({ user: result.user });
   } catch (error) {
@@ -36,15 +27,10 @@ export async function register(req: Request, res: Response) {
 export async function login(req: Request, res: Response) {
   try {
     const { email, password } = req.body;
-
     const result = await loginUser(email, password);
 
     return res
-      .cookie(
-        getSessionCookieName(),
-        result.sessionToken,
-        getSessionCookieOptions(),
-      )
+      .cookie(getSessionCookieName(), result.sessionId, getSessionCookieOptions())
       .status(200)
       .json({ user: result.user });
   } catch (error) {
@@ -58,29 +44,25 @@ export async function login(req: Request, res: Response) {
 }
 
 export async function getSession(req: Request, res: Response) {
-  const token = req.cookies[getSessionCookieName()];
-
-  if (!token) {
+  const sessionId = req.cookies[getSessionCookieName()];
+  if (!sessionId) {
     return sendError(res, 401, "UNAUTHORIZED", "Authentication is required");
   }
 
-  try {
-    const decoded = verifySessionToken(token);
-    const user = await getSessionUser(decoded.userId);
-
-    if (!user) {
-      res.clearCookie(getSessionCookieName(), getSessionCookieOptions());
-      return sendError(res, 401, "UNAUTHORIZED", "Authentication is required");
-    }
-
-    return res.status(200).json({ user });
-  } catch {
+  const user = await lookupSession(sessionId);
+  if (!user) {
     res.clearCookie(getSessionCookieName(), getSessionCookieOptions());
-    return sendError(res, 401, "INVALID_SESSION", "Invalid or expired session");
+    return sendError(res, 401, "UNAUTHORIZED", "Authentication is required");
   }
+
+  return res.status(200).json({ user });
 }
 
-export function logout(_req: Request, res: Response) {
+export async function logout(req: Request, res: Response) {
+  const sessionId = req.cookies[getSessionCookieName()];
+  if (sessionId) {
+    await destroySession(sessionId);
+  }
   res.clearCookie(getSessionCookieName(), getSessionCookieOptions());
   return res.status(204).send();
 }
