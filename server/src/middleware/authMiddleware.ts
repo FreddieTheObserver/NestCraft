@@ -1,8 +1,8 @@
 import type { NextFunction, Request, Response } from "express";
-import jwt from 'jsonwebtoken';
 
-import { env } from '../config/env.js';
-import { sendError } from '../utils/http.js';
+import { getSessionCookieName } from "../config/session.js";
+import { verifySessionToken } from "../services/authService.js";
+import { sendError } from "../utils/http.js";
 
 type UserRole = "customer" | "admin";
 
@@ -20,20 +20,18 @@ export function requireAuth(
       res: Response,
       next: NextFunction,
 ) {
-      const authorization = req.headers.authorization;
-      
-      if (!authorization || !authorization.startsWith("Bearer ")) {
+      const token = req.cookies?.[getSessionCookieName()];
+
+      if (!token) {
             return sendError(res, 401, "UNAUTHORIZED", "Authentication is required");
       }
 
-      const token = authorization.split(" ")[1];
-
       try {
-            const decoded = jwt.verify(token, env.jwtSecret) as AuthTokenPayload;
+            const decoded = verifySessionToken(token) as AuthTokenPayload;
             req.user = decoded;
             return next();
       } catch {
-            return sendError(res, 401, "INVALID_TOKEN", "Invalid or expired token");
+            return sendError(res, 401, "INVALID_SESSION", "Invalid or expired session");
       }
 }
 

@@ -1,3 +1,4 @@
+import cookieParser from "cookie-parser";
 import cors from "cors";
 import express from "express";
 
@@ -29,6 +30,7 @@ app.use(
     },
   }),
 );
+app.use(cookieParser());
 app.use(express.json());
 app.use("/api/uploads", uploadRouter);
 app.use("/api/uploads", express.static(uploadsRootDirectory));
