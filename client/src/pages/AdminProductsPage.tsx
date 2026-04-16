@@ -8,11 +8,14 @@ import {
       getAdminProducts,
       reactivateAdminProduct,
       type AdminProduct,
+      type PaginatedResponse,
 } from '../services/adminProducts'
 import { resolveImageUrl } from '../utils/images'
 
 function AdminProductsPage() {
       const [products, setProducts] = useState<AdminProduct[]>([])
+      const [pageData, setPageData] = useState<PaginatedResponse<AdminProduct> | null>(null)
+      const [page, setPage] = useState(1)
       const [loading, setLoading] = useState(true)
       const [error, setError] = useState('')
       const [actionError, setActionError] = useState('')
@@ -25,10 +28,16 @@ function AdminProductsPage() {
                         setLoading(true)
                         setError('')
 
-                        const data = await getAdminProducts()
+                        const data = await getAdminProducts(
+                              new URLSearchParams({
+                                    page: String(page),
+                                    pageSize: '12',
+                              }),
+                        )
 
                         if (!cancelled) {
-                              setProducts(data)
+                              setPageData(data)
+                              setProducts(data.items)
                         }
                   } catch (error) {
                         if (!cancelled) {
@@ -50,7 +59,7 @@ function AdminProductsPage() {
             return () => {
                   cancelled = true
             }
-      }, [])
+      }, [page])
 
       async function handleDeactivate(id: number) {
             try {
@@ -142,7 +151,7 @@ function AdminProductsPage() {
                         <div className="editorial-stat">
                               <p className="editorial-kicker text-primary">Catalog total</p>
                               <p className="mt-4 text-4xl font-bold tracking-[-0.04em] text-ink">
-                                    {products.length}
+                                    {pageData?.totalCount ?? products.length}
                               </p>
                         </div>
                         <div className="editorial-stat">
@@ -264,6 +273,30 @@ function AdminProductsPage() {
                               )})}
                         </section>
                   )}
+
+                  {pageData && pageData.totalPages > 1 ? (
+                        <div className="flex items-center justify-between gap-4">
+                              <button
+                                    type="button"
+                                    disabled={page <= 1}
+                                    onClick={() => setPage((current) => Math.max(1, current - 1))}
+                                    className="editorial-button-secondary disabled:cursor-not-allowed disabled:opacity-50"
+                              >
+                                    Previous
+                              </button>
+                              <p className="text-sm text-primary">
+                                    Page {pageData.page} of {pageData.totalPages}
+                              </p>
+                              <button
+                                    type="button"
+                                    disabled={page >= pageData.totalPages}
+                                    onClick={() => setPage((current) => current + 1)}
+                                    className="editorial-button-secondary disabled:cursor-not-allowed disabled:opacity-50"
+                              >
+                                    Next
+                              </button>
+                        </div>
+                  ) : null}
             </PageShell>
       )
 }

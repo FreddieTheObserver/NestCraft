@@ -5,7 +5,7 @@ import AdminProductForm from '../components/AdminProductForm'
 import PageShell from '../components/PageShell'
 import StatusPanel from '../components/StatusPanel'
 import {
-      getAdminProducts,
+      getAdminProductById,
       getCategories,
       uploadProductImage,
       updateAdminProduct,
@@ -40,20 +40,12 @@ function AdminEditProductPage() {
 
                         const [categoryData, productData] = await Promise.all([
                               getCategories(),
-                              getAdminProducts(),
+                              getAdminProductById(Number(id)),
                         ])
-
-                        const matchedProduct = productData.find(
-                              (item) => item.id === Number(id),
-                        )
 
                         if (!cancelled) {
                               setCategories(categoryData)
-                              setProduct(matchedProduct ?? null)
-
-                              if (!matchedProduct) {
-                                    setError('Product not found')
-                              }
+                              setProduct(productData)
                         }
                   } catch (error) {
                         if (!cancelled) {

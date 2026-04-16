@@ -3,6 +3,14 @@ import type { Product } from './products';
 
 export type AdminProduct = Product;
 
+export type PaginatedResponse<T> = {
+      items: T[]
+      page: number
+      pageSize: number
+      totalCount: number
+      totalPages: number
+}
+
 export type UploadProductImageResponse = {
       imageUrl: string
 }
@@ -46,14 +54,26 @@ export type ProductFormInput = {
       isActive: boolean
 }
 
-export async function getAdminProducts(): Promise<AdminProduct[]> {
-      const response = await apiFetch('/api/admin/products')
+export async function getAdminProducts(
+      params: URLSearchParams = new URLSearchParams({ page: '1', pageSize: '12' }),
+): Promise<PaginatedResponse<AdminProduct>> {
+      const response = await apiFetch(`/api/admin/products?${params.toString()}`)
 
       if (!response.ok) {
             throw new Error(await readApiError(response, "Failed to fetch admin products"))
       }
 
-      return response.json() as Promise<AdminProduct[]>;
+      return response.json() as Promise<PaginatedResponse<AdminProduct>>;
+}
+
+export async function getAdminProductById(id: number): Promise<AdminProduct> {
+      const response = await apiFetch(`/api/admin/products/${id}`)
+
+      if (!response.ok) {
+            throw new Error(await readApiError(response, "Failed to fetch product"))
+      }
+
+      return response.json() as Promise<AdminProduct>
 }
 
 export async function getCategories(): Promise<CategoryOption[]> {

@@ -12,14 +12,24 @@ export type AdminOrder = OrderResponse & {
   }
 }
 
-export async function getAdminOrders(): Promise<AdminOrder[]> {
-  const response = await apiFetch('/api/admin/orders')
+export type PaginatedAdminOrders = {
+  items: AdminOrder[]
+  page: number
+  pageSize: number
+  totalCount: number
+  totalPages: number
+}
+
+export async function getAdminOrders(
+  params: URLSearchParams = new URLSearchParams({ page: '1', pageSize: '10' }),
+): Promise<PaginatedAdminOrders> {
+  const response = await apiFetch(`/api/admin/orders?${params.toString()}`)
 
   if (!response.ok) {
     throw new Error(await readApiError(response, 'Failed to fetch admin orders'))
   }
 
-  return response.json() as Promise<AdminOrder[]>
+  return response.json() as Promise<PaginatedAdminOrders>
 }
 
 export async function updateAdminOrderStatus(

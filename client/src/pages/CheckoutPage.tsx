@@ -12,14 +12,6 @@ function CheckoutPage() {
   const { items, subtotal, clearCart } = useCart()
   const { user, isAuthenticated, isInitializing } = useAuth()
 
-  if (isInitializing) {
-    return null
-  }
-
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace state={{ from: location.pathname }} />
-  }
-
   const [shippingName, setShippingName] = useState(user?.name ?? '')
   const [shippingEmail, setShippingEmail] = useState(user?.email ?? '')
   const [shippingPhone, setShippingPhone] = useState('')
@@ -29,6 +21,14 @@ function CheckoutPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [createdOrder, setCreatedOrder] = useState<OrderResponse | null>(null)
+
+  if (isInitializing) {
+    return null
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace state={{ from: location.pathname }} />
+  }
 
   const shippingFee = subtotal >= 100 ? 0 : 10
   const totalAmount = subtotal + shippingFee

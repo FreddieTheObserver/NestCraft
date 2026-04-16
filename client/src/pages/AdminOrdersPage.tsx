@@ -8,6 +8,7 @@ import {
   getAdminOrders,
   updateAdminOrderStatus,
   type AdminOrder,
+  type PaginatedAdminOrders,
 } from '../services/adminOrders'
 import type { OrderStatus } from '../services/orders'
 import { resolveImageUrl } from '../utils/images'
@@ -27,6 +28,8 @@ const statusTone: Record<OrderStatus, string> = {
 function AdminOrdersPage() {
   const { isAuthenticated } = useAuth()
   const [orders, setOrders] = useState<AdminOrder[]>([])
+  const [pageData, setPageData] = useState<PaginatedAdminOrders | null>(null)
+  const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [updatingId, setUpdatingId] = useState<number | null>(null)
@@ -34,6 +37,7 @@ function AdminOrdersPage() {
   const loadOrders = useEffectEvent(async () => {
     if (!isAuthenticated) {
       setOrders([])
+      setPageData(null)
       setError('You must be logged in to manage orders.')
       setLoading(false)
       return
@@ -43,9 +47,15 @@ function AdminOrdersPage() {
       setLoading(true)
       setError('')
 
-      const data = await getAdminOrders()
+      const data = await getAdminOrders(
+        new URLSearchParams({
+          page: String(page),
+          pageSize: '10',
+        }),
+      )
 
-      setOrders(data)
+      setPageData(data)
+      setOrders(data.items)
     } catch (loadError) {
       setError(
         loadError instanceof Error
@@ -72,7 +82,7 @@ function AdminOrdersPage() {
         console.error('Admin order stream disconnected:', streamError)
       },
     })
-  }, [isAuthenticated])
+  }, [isAuthenticated, page])
 
   async function handleStatusChange(id: number, status: OrderStatus) {
     try {
@@ -147,7 +157,7 @@ function AdminOrdersPage() {
           </p>
           <div className="mt-5 grid grid-cols-2 gap-4">
             <div>
-              <p className="text-3xl font-semibold text-ink">{orders.length}</p>
+              <p className="text-3xl font-semibold text-ink">{pageData?.totalCount ?? orders.length}</p>
               <p className="mt-1 text-sm text-primary">Orders in system</p>
             </div>
             <div>
@@ -330,6 +340,30 @@ function AdminOrdersPage() {
           ))}
         </div>
       )}
+
+      {pageData && pageData.totalPages > 1 ? (
+        <div className="flex items-center justify-between gap-4">
+          <button
+            type="button"
+            disabled={page <= 1}
+            onClick={() => setPage((current) => Math.max(1, current - 1))}
+            className="editorial-button-secondary disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Previous
+          </button>
+          <p className="text-sm text-primary">
+            Page {pageData.page} of {pageData.totalPages}
+          </p>
+          <button
+            type="button"
+            disabled={page >= pageData.totalPages}
+            onClick={() => setPage((current) => current + 1)}
+            className="editorial-button-secondary disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Next
+          </button>
+        </div>
+      ) : null}
     </PageShell>
   )
 }
