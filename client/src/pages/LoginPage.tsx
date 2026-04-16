@@ -1,11 +1,14 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 import PageShell from '../components/PageShell'
 import { useAuth } from '../context/AuthContext'
 
 function LoginPage() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const redirectTo =
+    (location.state as { from?: string } | null)?.from ?? '/products'
   const { login } = useAuth()
 
   const [email, setEmail] = useState('')
@@ -21,7 +24,7 @@ function LoginPage() {
       setError('')
 
       await login({ email, password })
-      navigate('/products')
+      navigate(redirectTo)
     } catch (loginError) {
       setError(
         loginError instanceof Error

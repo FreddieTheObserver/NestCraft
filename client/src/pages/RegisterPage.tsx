@@ -1,11 +1,14 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 import PageShell from '../components/PageShell'
 import { useAuth } from '../context/AuthContext'
 
 function RegisterPage() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const redirectTo =
+    (location.state as { from?: string } | null)?.from ?? '/products'
   const { register } = useAuth()
 
   const [name, setName] = useState('')
@@ -22,7 +25,7 @@ function RegisterPage() {
       setError('')
 
       await register({ name, email, password })
-      navigate('/products')
+      navigate(redirectTo)
     } catch (registerError) {
       setError(
         registerError instanceof Error

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, Navigate, useLocation } from 'react-router-dom'
 
 import PageShell from '../components/PageShell'
 import StatusPanel from '../components/StatusPanel'
@@ -8,8 +8,17 @@ import { useCart } from '../context/CartContext'
 import { createOrder, type OrderResponse } from '../services/orders'
 
 function CheckoutPage() {
+  const location = useLocation()
   const { items, subtotal, clearCart } = useCart()
-  const { user, isAuthenticated } = useAuth()
+  const { user, isAuthenticated, isInitializing } = useAuth()
+
+  if (isInitializing) {
+    return null
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace state={{ from: location.pathname }} />
+  }
 
   const [shippingName, setShippingName] = useState(user?.name ?? '')
   const [shippingEmail, setShippingEmail] = useState(user?.email ?? '')
@@ -26,11 +35,6 @@ function CheckoutPage() {
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
-
-    if (!isAuthenticated) {
-      setError('You must be logged in to place an order.')
-      return
-    }
 
     if (items.length === 0) {
       setError('Your cart is empty.')
