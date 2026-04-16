@@ -5,3 +5,4 @@ server/.env
 AGENT.md
 CLAUDE.md
 server/uploads
+.worktrees/
