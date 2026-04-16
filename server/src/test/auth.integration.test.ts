@@ -75,6 +75,29 @@ describe("auth session contract", () => {
     expect(sessionResponse.status).toBe(401);
   });
 
+  it("clears the session cookie on logout", async () => {
+    const cookie = await registerAndGetCookie({
+      name: "Logout User",
+      email: uniqueEmail("logout-clear"),
+      password: "password123",
+    });
+
+    const logoutResponse = await request(app)
+      .post("/api/auth/logout")
+      .set("Cookie", cookie);
+
+    expect(logoutResponse.status).toBe(204);
+    const clearedHeader = logoutResponse.headers["set-cookie"];
+    expect(clearedHeader).toBeDefined();
+    expect(clearedHeader[0]).toContain("nestcraft_session=");
+
+    const sessionResponse = await request(app)
+      .get("/api/auth/session")
+      .set("Cookie", cookie);
+
+    expect(sessionResponse.status).toBe(401);
+  });
+
   it("authorizes admin endpoints against the fresh DB role, not the cookie", async () => {
     const email = uniqueEmail("role");
     const cookie = await registerAndGetCookie({

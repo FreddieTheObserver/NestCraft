@@ -78,3 +78,55 @@ describe("admin orders list", () => {
     }
   });
 });
+
+describe("order ownership", () => {
+  it("rejects access to another user's order detail", async () => {
+    const product = await prisma.product.findFirst({
+      where: { isActive: true },
+      orderBy: { id: "asc" },
+    });
+
+    if (!product) {
+      return;
+    }
+
+    const ownerEmail = uniqueEmail("owner");
+    const ownerRegister = await request(app).post("/api/auth/register").send({
+      name: "Owner",
+      email: ownerEmail,
+      password: "password123",
+    });
+    expect(ownerRegister.status).toBe(201);
+    const ownerCookie = ownerRegister.headers["set-cookie"][0].split(";")[0];
+
+    const otherEmail = uniqueEmail("other");
+    const otherRegister = await request(app).post("/api/auth/register").send({
+      name: "Other",
+      email: otherEmail,
+      password: "password123",
+    });
+    expect(otherRegister.status).toBe(201);
+    const otherCookie = otherRegister.headers["set-cookie"][0].split(";")[0];
+
+    const createResponse = await request(app)
+      .post("/api/orders")
+      .set("Cookie", ownerCookie)
+      .send({
+        shippingName: "Owner",
+        shippingEmail: ownerEmail,
+        shippingPhone: "1234567",
+        shippingCity: "Bangkok",
+        shippingAddress: "123 Test Street",
+        items: [{ productId: product.id, quantity: 1 }],
+      });
+
+    expect(createResponse.status).toBe(201);
+    const orderNumber = createResponse.body.orderNumber;
+
+    const detailResponse = await request(app)
+      .get(`/api/orders/${orderNumber}`)
+      .set("Cookie", otherCookie);
+
+    expect(detailResponse.status).toBe(404);
+  });
+});
