@@ -1,10 +1,18 @@
 import { render, screen, waitFor } from "@testing-library/react";
-import { createMemoryRouter, RouterProvider } from "react-router-dom";
+import {
+      MemoryRouter,
+      Route,
+      Routes,
+      createMemoryRouter,
+      RouterProvider,
+} from "react-router-dom";
 import { beforeAll, describe, expect, it, vi } from "vitest";
 
 import { AuthProvider } from "../context/AuthContext";
 import { CartProvider } from "../context/CartContext";
 import { ThemeProvider } from "../context/ThemeContext";
+import CheckoutPage from "../pages/CheckoutPage";
+import LoginPage from "../pages/LoginPage";
 import { router as appRoutes } from "./index";
 
 beforeAll(() => {
@@ -44,7 +52,26 @@ describe("guest checkout flow", () => {
             );
 
             await waitFor(() => {
-                  expect(screen.getByText(/Cart atelier/i)).toBeTruthy();
+                  expect(screen.getByText(/Cart atelier/i)).toBeInTheDocument();
             });
+      });
+
+      it("redirects a guest from checkout intent to login with return state", async () => {
+            render(
+                  <ThemeProvider>
+                        <AuthProvider>
+                              <CartProvider>
+                                    <MemoryRouter initialEntries={["/checkout"]}>
+                                          <Routes>
+                                                <Route path="/checkout" element={<CheckoutPage />} />
+                                                <Route path="/login" element={<LoginPage />} />
+                                          </Routes>
+                                    </MemoryRouter>
+                              </CartProvider>
+                        </AuthProvider>
+                  </ThemeProvider>,
+            );
+
+            expect(await screen.findByText(/Sign in/i)).toBeInTheDocument();
       });
 });

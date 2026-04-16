@@ -34,7 +34,7 @@ describe("AuthProvider", () => {
             );
 
             await waitFor(() => {
-                  expect(screen.getByText("session@example.com")).toBeTruthy();
+                  expect(screen.getByText("session@example.com")).toBeInTheDocument();
             });
       });
 });
