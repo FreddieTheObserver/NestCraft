@@ -13,11 +13,15 @@ export function validate(schemas: SchemaSet) {
       return (req: Request, res: Response, next: NextFunction) => {
             try {
                   if (schemas.body) {
-                        req.body = schemas.body.parse(req.body);
+                        const parsed = schemas.body.parse(req.body);
+                        res.locals.validatedBody = parsed;
+                        req.body = parsed;
                   }
 
                   if (schemas.params) {
-                        req.params = schemas.params.parse(req.params) as Request["params"];
+                        const parsed = schemas.params.parse(req.params);
+                        res.locals.validatedParams = parsed;
+                        req.params = parsed as Request["params"];
                   }
 
                   if (schemas.query) {

@@ -1,11 +1,10 @@
 import type { Request, Response } from "express";
 import type { ProductListQuery } from "../validation/productSchemas.js";
 
-import { 
+import {
       createProduct,
       deactivateProduct,
-      getAllProducts, 
-      getAllProductsForAdmin,
+      getAllProducts,
       getProductBySlug,
       updateProduct
 } from "../services/productService.js";
@@ -15,22 +14,10 @@ type ProductIdParams = {
       id: string;
 };
 
-export async function getAdminProducts(_req: Request, res: Response) {
+export async function getProducts(_req: Request, res: Response) {
       try {
-            const products = await getAllProductsForAdmin();
-            return res.status(200).json(products);
-      } catch (error) {
-            console.error("Failed to fetch admin products: ", error);
-            return sendError(res, 500, "INTERNAL_ERROR", "Failed to fetch admin products");
-      }
-}
-
-export async function getProducts(
-      req: Request<unknown, unknown, unknown, ProductListQuery>,
-      res: Response,
-) {
-      try {
-            const products = await getAllProducts(req.query);
+            const query = res.locals.validatedQuery as ProductListQuery;
+            const products = await getAllProducts(query);
 
             return res.status(200).json(products);
       } catch (error) {

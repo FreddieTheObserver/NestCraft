@@ -16,14 +16,57 @@ type CreateProductInput = {
 
 type UpdateProductInput = Partial<CreateProductInput>;
 
-export async function getAllProductsForAdmin() {
-      return prisma.product.findMany({
-            include: {
-                  category: true,
-            },
-            orderBy: {
-                  createdAt: "desc",
-            },
+type AdminProductListParams = {
+      page: number;
+      pageSize: number;
+      search?: string;
+      isActive?: "true" | "false";
+      isFeatured?: "true" | "false";
+};
+
+export async function getAdminProductsPage(query: AdminProductListParams) {
+      const where: Prisma.ProductWhereInput = {};
+
+      if (query.search) {
+            where.OR = [
+                  { name: { contains: query.search, mode: "insensitive" } },
+                  { description: { contains: query.search, mode: "insensitive" } },
+                  { slug: { contains: query.search, mode: "insensitive" } },
+            ];
+      }
+
+      if (query.isActive) {
+            where.isActive = query.isActive === "true";
+      }
+
+      if (query.isFeatured) {
+            where.isFeatured = query.isFeatured === "true";
+      }
+
+      const [items, totalCount] = await prisma.$transaction([
+            prisma.product.findMany({
+                  where,
+                  include: { category: true },
+                  orderBy: { createdAt: "desc" },
+                  skip: (query.page - 1) * query.pageSize,
+                  take: query.pageSize,
+            }),
+            prisma.product.count({ where }),
+      ]);
+
+      return {
+            items,
+            page: query.page,
+            pageSize: query.pageSize,
+            totalCount,
+            totalPages: Math.max(1, Math.ceil(totalCount / query.pageSize)),
+      };
+}
+
+export async function getAdminProductById(id: number) {
+      return prisma.product.findUnique({
+            where: { id },
+            include: { category: true },
       });
 }
 
